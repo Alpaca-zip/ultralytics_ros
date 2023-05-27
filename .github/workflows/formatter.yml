@@ -1,0 +1,35 @@
+name: formatter
+
+on:
+  push:
+
+jobs:
+  formatter:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.8.10]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install autoflake black isort
+      - name: autoflake
+        run: find . -type f -name "*.py" -exec autoflake {} \;
+      - name: black
+        run: find . -type f -name "*.py" -exec black {} \;
+      - name: isort
+        run: find . -type f -name "*.py" -exec isort {} \;
+      - name: auto commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: apply Code Formatter Change
+          ref: ${{ github.head_ref }}
