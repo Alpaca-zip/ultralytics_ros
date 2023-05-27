@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="yolo_model" default="yolov8n.pt"/>
+  <arg name="publish_rate" default="10"/>
+  <arg name="input_topic" default="image_raw"/>
+  <arg name="output_topic" default="result_image"/>
+  <arg name="conf_thres" default="0.25"/>
+  <arg name="iou_thres" default="0.45"/>
+  <arg name="agnostic" default="false"/>
+  <arg name="max_det" default="300"/>
+  <arg name="line_width" default="1"/>
+  <!-- Object detection node -->
+  <node name="yolo_node" pkg="ultralytics_ros" type="yolo_node.py" output="screen">
+    <param name="yolo_model" value="$(arg yolo_model)"/>
+    <param name="publish_rate" value="$(arg publish_rate)"/>
+    <param name="input_topic" value="$(arg input_topic)"/>
+    <param name="output_topic" value="$(arg output_topic)"/>
+    <param name="conf_thres" value="$(arg conf_thres)"/>
+    <param name="iou_thres" value="$(arg iou_thres)"/>
+    <param name="agnostic" value="$(arg agnostic)"/>
+    <param name="max_det" value="$(arg max_det)"/>
+    <param name="line_width" value="$(arg line_width)"/>
+    <rosparam>
+      # classes: [0] (person)
+      # classes: [1] (bicycle)
+      # classes: [2] (car)
+      # ...
+      # See also : https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
+    </rosparam>
+  </node>
+</launch>
