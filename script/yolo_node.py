@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import rospy
+import numpy as np
 import ros_numpy
 import roslib.packages
-import numpy as np
+import rospy
 import torch
-
 from sensor_msgs.msg import Image
 from ultralytics import YOLO
 from ultralytics.yolo.data.augment import LetterBox
