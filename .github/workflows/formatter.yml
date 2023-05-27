@@ -31,5 +31,5 @@ jobs:
       - name: auto commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: apply Code Formatter Change
+          commit_message: apply code formatter change
           ref: ${{ github.head_ref }}
