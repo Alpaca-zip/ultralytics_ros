@@ -26,8 +26,9 @@ See also: https://docs.ultralytics.com/models/
 - `output_topic`: Topic name for output.
 - `conf_thres`: Confidence threshold below which boxes will be filtered out.
 - `iou_thres`: IoU threshold below which boxes will be filtered out during NMS.
-- `agnostic`: If True, the model is agnostic to the number of classes, and all classes will be considered as one.
+- `agnostic`: If true, the model is agnostic to the number of classes, and all classes will be considered as one.
 - `max_det`: Maximum number of boxes to keep after NMS.
 - `line_width`: Line width of the bounding boxes. If None, it is scaled to the image size.
+- `debug`:  If true, run simple viewer for output topic.
 - `classes`: List of class indices to consider.  
 See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
