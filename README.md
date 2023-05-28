@@ -1,7 +1,7 @@
 # ultralytics_ros [![](https://img.shields.io/badge/ROS-noetic-green?style=flat-square&logo=ros)](https://github.com/Alpaca-zip/ultralytics_ros/tree/noetic-devel)
 ROS package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
-![yolo](https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/82e098fa-e652-4b1f-a036-337571a76a4b)
+![yolo](https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a)
 
 ## Setup
 ```
