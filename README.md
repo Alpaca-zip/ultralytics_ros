@@ -62,5 +62,5 @@ See also: https://docs.ultralytics.com/models/
 - `classes`: List of class indices to consider.  
 See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
 
-## Docker with KITTI datasets ?
+## Docker with KITTI datasets 🐳
 Release soon.
