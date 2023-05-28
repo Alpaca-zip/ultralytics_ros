@@ -45,6 +45,6 @@ $ bash run.sh
 ```
 ### Quick start
 ```
-$ roslaunch ultralytics_ros run.launch input_topic:=/kitti/camera_color_left/image_raw ebug:=true
+$ roslaunch ultralytics_ros run.launch input_topic:=/kitti/camera_color_left/image_raw debug:=true
 $ rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
 ```
