@@ -9,6 +9,7 @@
   <arg name="agnostic" default="false"/>
   <arg name="max_det" default="300"/>
   <arg name="line_width" default="1"/>
+  <arg name="debug" default="false"/>
   <!-- Object detection node -->
   <node name="yolo_node" pkg="ultralytics_ros" type="yolo_node.py" output="screen">
     <param name="yolo_model" value="$(arg yolo_model)"/>
@@ -27,5 +28,9 @@
       # ...
       # See also : https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
     </rosparam>
+  </node>
+  <!-- Image view -->
+  <node if="$(arg debug)" name="image_view" pkg="image_view" type="image_view" output="screen">
+    <remap from="image" to="$(arg output_topic)"/>
   </node>
 </launch>

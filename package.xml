@@ -9,4 +9,5 @@
   <depend>rospy</depend>
   <depend>ros_numpy</depend>
   <depend>sensor_msgs</depend>
+  <depend>image_view</depend>
 </package>
