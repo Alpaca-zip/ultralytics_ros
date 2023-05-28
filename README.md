@@ -32,3 +32,19 @@ See also: https://docs.ultralytics.com/models/
 - `debug`:  If true, run simple viewer for output topic.
 - `classes`: List of class indices to consider.  
 See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
+
+## Docker with KITTI datasets 🐳
+
+<img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/d5ae9d18-56b6-4df9-84a5-be5835c4356a" width="600px">
+
+### Build & Run
+```
+$ cd ~/catkin_ws/src/ultralytics_ros/docker
+$ bash build.sh
+$ bash run.sh
+```
+### Quick start
+```
+$ roslaunch ultralytics_ros run.launch input_topic:=/kitti/camera_color_left/image_raw bebug:=true
+$ rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
+```
