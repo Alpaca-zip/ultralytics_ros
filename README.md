@@ -6,7 +6,7 @@ ROS package for real-time object detection using the Ultralytics YOLO, enabling 
 ## Setup
 ```
 $ cd ~/catkin_ws/src
-$ https://github.com/Alpaca-zip/ultralytics_ros.git
+$ git clone https://github.com/Alpaca-zip/ultralytics_ros.git
 $ python3 -m pip install -r ultralytics_ros/requirements.txt
 $ cd ~/catkin_ws
 $ rosdep install -r -y -i --from-paths .
