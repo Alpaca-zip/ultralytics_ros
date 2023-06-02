@@ -4,10 +4,9 @@ import ros_numpy
 import roslib.packages
 import rospy
 from sensor_msgs.msg import Image
-from vision_msgs.msg import Detection2D
-from vision_msgs.msg import Detection2DArray
-from vision_msgs.msg import ObjectHypothesisWithPose
 from ultralytics import YOLO
+from vision_msgs.msg import (Detection2D, Detection2DArray,
+                             ObjectHypothesisWithPose)
 
 
 class TrackerNode:
