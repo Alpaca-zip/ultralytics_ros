@@ -13,9 +13,9 @@ $ rosdep install -r -y -i --from-paths .
 $ catkin build
 ```
 ## Usage
-### Run yolo_node
+### Run tracker_node
 ```
-$ roslaunch ultralytics_ros run.launch
+$ roslaunch ultralytics_ros tracker.launch
 ```
 ### Params
 - `yolo_model`: Pre-trained Weights.  
@@ -26,12 +26,17 @@ See also: https://docs.ultralytics.com/models/
 - `output_topic`: Topic name for output.
 - `conf_thres`: Confidence threshold below which boxes will be filtered out.
 - `iou_thres`: IoU threshold below which boxes will be filtered out during NMS.
-- `agnostic`: If true, the model is agnostic to the number of classes, and all classes will be considered as one.
 - `max_det`: Maximum number of boxes to keep after NMS.
-- `line_width`: Line width of the bounding boxes. If None, it is scaled to the image size.
-- `debug`:  If true, run simple viewer for output topic.
+- `tracker`: Tracking algorithms.
 - `classes`: List of class indices to consider.  
-See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
+See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml 
+- `debug`:  If true, run simple viewer for output topic.
+- `debug_conf`:  Whether to plot the detection confidence score.
+- `debug_line_width`: Line width of the bounding boxes.
+- `debug_font_size`: Font size of the text.
+- `debug_labels`: Font to use for the text.
+- `debug_font`: Whether to plot the label of bounding boxes.
+- `debug_boxes`: Whether to plot the bounding boxes.
 
 ## Docker with KITTI datasets 🐳
 
@@ -45,6 +50,6 @@ $ bash run.sh
 ```
 ### Quick start
 ```
-$ roslaunch ultralytics_ros run.launch input_topic:=/kitti/camera_color_left/image_raw debug:=true
+$ roslaunch ultralytics_ros tracker.launch input_topic:=/kitti/camera_color_left/image_raw debug:=true
 $ rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
 ```
