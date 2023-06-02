@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="yolo_model" default="yolov8n.pt"/>
+  <arg name="publish_rate" default="10"/>
+  <arg name="detection_topic" default="detection_result"/>
+  <arg name="input_topic" default="/kitti/camera_color_left/image_raw"/>
+  <arg name="conf_thres" default="0.25"/>
+  <arg name="iou_thres" default="0.45"/>
+  <arg name="max_det" default="300"/>
+  <arg name="tracker" default="bytetrack.yaml"/>
+  <arg name="debug" default="false"/>
+  <arg name="debug_conf" default="true"/>
+  <arg name="debug_line_width" default="1"/>
+  <arg name="debug_font_size" default="1"/>
+  <arg name="debug_font" default="Arial.ttf"/>
+  <arg name="debug_labels" default="true"/>
+  <arg name="debug_boxes" default="true"/>
+  <!-- Object detection node -->
+  <node name="tracker_node" pkg="ultralytics_ros" type="tracker_node.py" output="screen">
+    <param name="yolo_model" value="$(arg yolo_model)"/>
+    <param name="publish_rate" value="$(arg publish_rate)"/>
+    <param name="detection_topic" value="$(arg detection_topic)"/>
+    <param name="input_topic" value="$(arg input_topic)"/>
+    <param name="conf_thres" value="$(arg conf_thres)"/>
+    <param name="iou_thres" value="$(arg iou_thres)"/>
+    <param name="max_det" value="$(arg max_det)"/>
+    <param name="tracker" value="$(arg tracker)"/>
+    <param name="debug" value="$(arg debug)"/>
+    <param name="debug_conf" value="$(arg debug_conf)"/>
+    <param name="debug_line_width" value="$(arg debug_line_width)"/>
+    <param name="debug_font_size" value="$(arg debug_font_size)"/>
+    <param name="debug_font" value="$(arg debug_font)"/>
+    <param name="debug_labels" value="$(arg debug_labels)"/>
+    <param name="debug_boxes" value="$(arg debug_boxes)"/>
+    <rosparam>
+      # classes: [0] (person)
+      # classes: [1] (bicycle)
+      # classes: [2] (car)
+      # ...
+      # See also : https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
+    </rosparam>
+  </node>
+  <!-- Image view -->
+  <node if="$(arg debug)" name="image_view" pkg="image_view" type="image_view" output="screen">
+    <remap from="image" to="debug_image"/>
+  </node>
+</launch>

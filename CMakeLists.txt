@@ -5,4 +5,5 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   ros_numpy
   sensor_msgs
+  vision_msgs
 )
