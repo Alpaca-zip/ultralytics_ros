@@ -3,7 +3,7 @@
   <arg name="yolo_model" default="yolov8n.pt"/>
   <arg name="publish_rate" default="10"/>
   <arg name="detection_topic" default="detection_result"/>
-  <arg name="input_topic" default="/kitti/camera_color_left/image_raw"/>
+  <arg name="input_topic" default="image_raw"/>
   <arg name="conf_thres" default="0.25"/>
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
