@@ -22,8 +22,8 @@ $ roslaunch ultralytics_ros tracker.launch
 For yolov8, you can choose `yolov8n.pt`, `yolov8s.pt`, `yolov8m.pt`, `yolov8l.pt`, `yolov8x.pt`.  
 See also: https://docs.ultralytics.com/models/
 - `publish_rate`: Publish rate for output topic.
-- `input_topic`: Topic name for input.
-- `output_topic`: Topic name for output.
+- `input_topic`: Topic name for input. (sensor_msgs/Image)
+- `detection_topic`: Topic name for output. (vision_msgs/Detection2DArray)
 - `conf_thres`: Confidence threshold below which boxes will be filtered out.
 - `iou_thres`: IoU threshold below which boxes will be filtered out during NMS.
 - `max_det`: Maximum number of boxes to keep after NMS.
