@@ -59,7 +59,7 @@ See also: https://docs.ultralytics.com/models/
 - `tracker`: Tracking algorithms.
 - `classes`: List of class indices to consider.  
 See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml 
-- `debug`:  If true, run simple viewer for output topic.
+- `debug`:  If true, run simple viewer.
 - `debug_conf`:  Whether to plot the detection confidence score.
 - `debug_line_width`: Line width of the bounding boxes.
 - `debug_font_size`: Font size of the text.
