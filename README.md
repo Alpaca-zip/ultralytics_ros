@@ -3,7 +3,7 @@ ROS2 package for real-time object detection using the Ultralytics YOLO, enabling
 
 ![yolo](https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a)
 
-## Notice (For humble)
+## Notice (For humble & WSL2)
 `could not load library libcudnn_cnn_infer.so.8. Error: libcuda.so: cannot open shared object file: No such file or directory`
 
 If you get an error like the above, add to the `.bashrc` file is:
