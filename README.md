@@ -1,4 +1,4 @@
-# ultralytics_ros [![](https://img.shields.io/badge/ROS-noetic-blue?style=flat-square&logo=ros)](https://github.com/Alpaca-zip/ultralytics_ros/tree/noetic-devel) [![](https://img.shields.io/badge/ROS-melodic-blueviolet?style=flat-square&logo=ros)](https://github.com/Alpaca-zip/ultralytics_ros/tree/melodic-devel)
+# ultralytics_ros [![](https://img.shields.io/badge/ROS2-humble-important?style=flat-square&logo=ros)](https://github.com/Alpaca-zip/ultralytics_ros/tree/humble-devel) [![](https://img.shields.io/badge/ROS-noetic-blue?style=flat-square&logo=ros)](https://github.com/Alpaca-zip/ultralytics_ros/tree/noetic-devel) [![](https://img.shields.io/badge/ROS-melodic-blueviolet?style=flat-square&logo=ros)](https://github.com/Alpaca-zip/ultralytics_ros/tree/melodic-devel)
 ROS package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
 ![yolo](https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a)
@@ -6,7 +6,7 @@ ROS package for real-time object detection using the Ultralytics YOLO, enabling 
 ## Setup
 ```
 $ cd ~/catkin_ws/src
-$ git clone https://github.com/Alpaca-zip/ultralytics_ros.git
+$ git clone -b noetic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
 $ python3 -m pip install -r ultralytics_ros/requirements.txt
 $ cd ~/catkin_ws
 $ rosdep install -r -y -i --from-paths .
@@ -15,7 +15,7 @@ $ catkin build
 ## Usage
 ### Run tracker_node
 ```
-$ roslaunch ultralytics_ros tracker.launch
+$ roslaunch ultralytics_ros tracker.launch debug:=true
 ```
 ### Params
 - `yolo_model`: Pre-trained Weights.  
