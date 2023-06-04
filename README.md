@@ -3,6 +3,13 @@ ROS2 package for real-time object detection using the Ultralytics YOLO, enabling
 
 ![yolo](https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a)
 
+## Notice (For humble)
+`could not load library libcudnn_cnn_infer.so.8. Error: libcuda.so: cannot open shared object file: No such file or directory`
+
+If you get an error like the above, add to the `.bashrc` file is:
+
+`export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH`
+
 ## Setup
 ```
 $ cd ~/colcon_ws/src
@@ -38,6 +45,6 @@ See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datas
 - `debug_font`: Whether to plot the label of bounding boxes.
 - `debug_boxes`: Whether to plot the bounding boxes.
 
-## Docker with KITTI datasets ?ê≥
+## Docker with KITTI datasets üê≥
 
 Release soon.
