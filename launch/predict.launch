@@ -7,7 +7,6 @@
   <arg name="conf_thres" default="0.25"/>
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
-  <arg name="tracker" default="bytetrack.yaml"/>
   <arg name="debug" default="false"/>
   <arg name="debug_conf" default="true"/>
   <arg name="debug_line_width" default="1"/>
@@ -16,7 +15,7 @@
   <arg name="debug_labels" default="true"/>
   <arg name="debug_boxes" default="true"/>
   <!-- Object detection node -->
-  <node name="tracker_node" pkg="ultralytics_ros" type="tracker_node.py" output="screen">
+  <node name="predict_node" pkg="ultralytics_ros" type="predict_node.py" output="screen">
     <param name="yolo_model" value="$(arg yolo_model)"/>
     <param name="publish_rate" value="$(arg publish_rate)"/>
     <param name="detection_topic" value="$(arg detection_topic)"/>
@@ -24,7 +23,6 @@
     <param name="conf_thres" value="$(arg conf_thres)"/>
     <param name="iou_thres" value="$(arg iou_thres)"/>
     <param name="max_det" value="$(arg max_det)"/>
-    <param name="tracker" value="$(arg tracker)"/>
     <param name="debug" value="$(arg debug)"/>
     <param name="debug_conf" value="$(arg debug_conf)"/>
     <param name="debug_line_width" value="$(arg debug_line_width)"/>

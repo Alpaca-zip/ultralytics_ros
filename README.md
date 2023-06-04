@@ -44,7 +44,7 @@ $ catkin build
 ## Usage
 ### Run tracker_node
 ```
-$ roslaunch ultralytics_ros tracker.launch debug:=true
+$ roslaunch ultralytics_ros predict.launch debug:=true
 ```
 ### Params
 - `yolo_model`: Pre-trained Weights.  
@@ -56,7 +56,6 @@ See also: https://docs.ultralytics.com/models/
 - `conf_thres`: Confidence threshold below which boxes will be filtered out.
 - `iou_thres`: IoU threshold below which boxes will be filtered out during NMS.
 - `max_det`: Maximum number of boxes to keep after NMS.
-- `tracker`: Tracking algorithms.
 - `classes`: List of class indices to consider.  
 See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml 
 - `debug`:  If true, run simple viewer.
