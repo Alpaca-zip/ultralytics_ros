@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="yolo_model" default="yolov8n.pt"/>
+  <arg name="publish_rate" default="10"/>
+  <arg name="detection_topic" default="detection_result"/>
+  <arg name="input_topic" default="image_raw"/>
+  <arg name="conf_thres" default="0.25"/>
+  <arg name="iou_thres" default="0.45"/>
+  <arg name="max_det" default="300"/>
+  <arg name="tracker" default="bytetrack.yaml"/>
+  <arg name="debug" default="false"/>
+  <arg name="debug_conf" default="true"/>
+  <arg name="debug_line_width" default="1"/>
+  <arg name="debug_font_size" default="1"/>
+  <arg name="debug_font" default="Arial.ttf"/>
+  <arg name="debug_labels" default="true"/>
+  <arg name="debug_boxes" default="true"/>
+  <!-- Object detection node -->
+  <node pkg="ultralytics_ros" exec="tracker_node" output="screen">
+    <param name="yolo_model" value="$(var yolo_model)"/>
+    <param name="publish_rate" value="$(var publish_rate)"/>
+    <param name="detection_topic" value="$(var detection_topic)"/>
+    <param name="input_topic" value="$(var input_topic)"/>
+    <param name="conf_thres" value="$(var conf_thres)"/>
+    <param name="iou_thres" value="$(var iou_thres)"/>
+    <param name="max_det" value="$(var max_det)"/>
+    <param name="tracker" value="$(var tracker)"/>
+    <param name="debug" value="$(var debug)"/>
+    <param name="debug_conf" value="$(var debug_conf)"/>
+    <param name="debug_line_width" value="$(var debug_line_width)"/>
+    <param name="debug_font_size" value="$(var debug_font_size)"/>
+    <param name="debug_font" value="$(var debug_font)"/>
+    <param name="debug_labels" value="$(var debug_labels)"/>
+    <param name="debug_boxes" value="$(var debug_boxes)"/>
+    <!--<param name="classes" value="0, 1, 2" value-sep=", "/>-->
+  </node>
+  <!-- Image view -->
+  <node if="$(var debug)" pkg="image_view" exec="image_view" output="screen">
+    <remap from="image" to="debug_image"/>
+  </node>
+</launch>
