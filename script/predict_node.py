@@ -9,7 +9,7 @@ from vision_msgs.msg import (Detection2D, Detection2DArray,
                              ObjectHypothesisWithPose)
 
 
-class TrackerNode:
+class PredictNode:
     def __init__(self):
         yolo_model = rospy.get_param("~yolo_model", "yolov8n.pt")
         publish_rate = rospy.get_param("~publish_rate", 10)
@@ -19,7 +19,6 @@ class TrackerNode:
         self.iou_thres = rospy.get_param("~iou_thres", 0.45)
         self.max_det = rospy.get_param("~max_det", 300)
         self.classes = rospy.get_param("~classes", None)
-        self.tracker = rospy.get_param("~tracker", "bytetrack.yaml")
         self.debug = rospy.get_param("~debug", False)
         self.debug_conf = rospy.get_param("~debug_conf", True)
         self.debug_line_width = rospy.get_param("~debug_line_width", None)
@@ -79,18 +78,17 @@ class TrackerNode:
     def image_callback(self, msg):
         self.header = msg.header
         numpy_image = ros_numpy.numpify(msg)
-        self.results = self.model.track(
+        self.results = self.model.predict(
             source=numpy_image,
             conf=self.conf_thres,
             iou=self.iou_thres,
             max_det=self.max_det,
             classes=self.classes,
-            tracker=self.tracker,
             verbose=False,
         )
 
 
 if __name__ == "__main__":
-    rospy.init_node("tracker_node")
-    node = TrackerNode()
+    rospy.init_node("predict_node")
+    node = PredictNode()
     rospy.spin()
