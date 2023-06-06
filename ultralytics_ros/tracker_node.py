@@ -77,6 +77,7 @@ class TrackerNode(Node):
             1.0 / publish_rate, self.publish_detection
         )
         self.header = None
+        self.encoding = None
         self.results = None
         self.create_subscription(Image, input_topic, self.image_callback, 1)
         self.image_pub = self.create_publisher(Image, "debug_image", 1)
@@ -92,7 +93,7 @@ class TrackerNode(Node):
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
+            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, self.encoding)
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self):
@@ -117,6 +118,7 @@ class TrackerNode(Node):
 
     def image_callback(self, msg):
         self.header = msg.header
+        self.encoding = msg.encoding
         numpy_image = self.bridge.imgmsg_to_cv2(msg)
         self.results = self.model.track(
             source=numpy_image,
