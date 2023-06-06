@@ -53,7 +53,9 @@ class PredictNode:
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = ros_numpy.msgify(Image, plotted_image, encoding=self.encoding)
+            debug_image_msg = ros_numpy.msgify(
+                Image, plotted_image, encoding=self.encoding
+            )
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self, event):
