@@ -17,12 +17,6 @@ RUN cd ~/catkin_ws/src && \
     python3 -m pip install -r ultralytics_ros/requirements.txt && \
     cd ~/catkin_ws && \
     catkin build
-RUN cd ~/. && \
-    python3 -m pip install --extra-index-url https://rospypi.github.io/simple/ kitti2bag \
-    rosbag rospy tf tf2_ros tf2_msgs actionlib_msgs geometry_msgs sensor_msgs cv_bridge roslz4 && \
-    wget https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/2011_09_26_calib.zip && \
-    wget https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/2011_09_26_drive_0106/2011_09_26_drive_0106_sync.zip && \
-    unzip "2011_09_26_drive_0106_sync.zip" && \
-    unzip "2011_09_26_calib.zip" && \
-    kitti2bag -t 2011_09_26 -r 0106 raw_synced . && \
-    rm -rf 2011_09_26*
+RUN cd ~/ && \
+    wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1FWW3yHq1ZVps5gtm0VGrSmEAX0gGRM2t' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1FWW3yHq1ZVps5gtm0VGrSmEAX0gGRM2t" -O kitti_2011_09_26_drive_0106_synced.bag && \
+    rm -rf /tmp/cookies.txt
