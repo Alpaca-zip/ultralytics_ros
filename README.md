@@ -47,4 +47,16 @@ See also: https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datas
 
 ## Docker with KITTI datasets 🐳
 
-Release soon.
+<img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/d5ae9d18-56b6-4df9-84a5-be5835c4356a" width="600px">
+
+### Build & Run
+```
+$ cd ~/colcon_ws/src/ultralytics_ros/docker
+$ bash build.sh
+$ bash run.sh
+```
+### Quick start
+```
+$ ros2 launch ultralytics_ros tracker.launch.xml input_topic:=/kitti/camera_color_left/image_raw debug:=true
+$ ros2 bag play kitti_2011_09_26_drive_0106_synced --clock --loop
+```
