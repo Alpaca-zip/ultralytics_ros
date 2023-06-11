@@ -34,7 +34,7 @@ class PredictNode:
         self.detection_pub = rospy.Publisher(
             detection_topic, Detection2DArray, queue_size=1
         )
-    
+
     def image_callback(self, msg):
         header = msg.header
         encoding = msg.encoding
@@ -60,9 +60,7 @@ class PredictNode:
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = ros_numpy.msgify(
-                Image, plotted_image, encoding=encoding
-            )
+            debug_image_msg = ros_numpy.msgify(Image, plotted_image, encoding=encoding)
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self, results, header):
