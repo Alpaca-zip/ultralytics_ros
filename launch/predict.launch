@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="yolo_model" default="yolov8n.pt"/>
-  <arg name="publish_rate" default="10"/>
   <arg name="detection_topic" default="detection_result"/>
-  <arg name="input_topic" default="image_raw"/>
+  <arg name="image_topic" default="image_raw"/>
   <arg name="conf_thres" default="0.25"/>
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
@@ -17,9 +16,8 @@
   <!-- Object detection node -->
   <node name="predict_node" pkg="ultralytics_ros" type="predict_node.py" output="screen">
     <param name="yolo_model" value="$(arg yolo_model)"/>
-    <param name="publish_rate" value="$(arg publish_rate)"/>
     <param name="detection_topic" value="$(arg detection_topic)"/>
-    <param name="input_topic" value="$(arg input_topic)"/>
+    <param name="image_topic" value="$(arg image_topic)"/>
     <param name="conf_thres" value="$(arg conf_thres)"/>
     <param name="iou_thres" value="$(arg iou_thres)"/>
     <param name="max_det" value="$(arg max_det)"/>
