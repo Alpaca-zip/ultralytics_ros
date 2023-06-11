@@ -7,8 +7,16 @@
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
+  <depend>roscpp</depend>
   <depend>ros_numpy</depend>
+  <depend>pcl_ros</depend>
+  <depend>tf2_ros</depend>
+  <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>vision_msgs</depend>
-  <depend>image_view</depend>
+  <depend>visualization_msgs</depend>
+  <depend>image_geometry</depend>
+  <depend>image_transport</depend>
+  <depend>message_filters</depend>
 </package>
