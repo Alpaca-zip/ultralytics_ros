@@ -1,6 +1,6 @@
-#include "tracker_with_cloud_node/tracker_with_cloud_node.h"
+#include "predict_with_cloud_node/predict_with_cloud_node.h"
 
-TrackerWithCloudNode::TrackerWithCloudNode() : _pnh("~")
+PredictWithCloudNode::PredictWithCloudNode() : _pnh("~")
 {
   _pnh.param<std::string>("camera_info_topic", _camera_info_topic, "camera_info");
   _pnh.param<std::string>("lidar_topic", _lidar_topic, "points_raw");
@@ -17,12 +17,12 @@ TrackerWithCloudNode::TrackerWithCloudNode() : _pnh("~")
   _marker_pub = _nh.advertise<visualization_msgs::MarkerArray>("detection_marker", 1);
   _sensor_fusion_sync = boost::make_shared<message_filters::Synchronizer<_sensor_fusion_sync_subs>>(10);
   _sensor_fusion_sync->connectInput(_camera_info_sub, _lidar_sub, _detection2d_sub);
-  _sensor_fusion_sync->registerCallback(boost::bind(&TrackerWithCloudNode::syncCallback, this, _1, _2, _3));
+  _sensor_fusion_sync->registerCallback(boost::bind(&PredictWithCloudNode::syncCallback, this, _1, _2, _3));
   _tf_buffer.reset(new tf2_ros::Buffer(ros::Duration(2.0), true));
   _tf_listener.reset(new tf2_ros::TransformListener(*_tf_buffer));
 }
 
-void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
+void PredictWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
                                         const sensor_msgs::PointCloud2ConstPtr& cloud_msg,
                                         const vision_msgs::Detection2DArrayConstPtr& detections2d_msg)
 {
@@ -46,7 +46,7 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
 }
 
 pcl::PointCloud<pcl::PointXYZ>
-TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr cloud_msg)
+PredictWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr cloud_msg)
 {
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
@@ -65,7 +65,7 @@ TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPt
   return transformed_cloud;
 }
 
-std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2> TrackerWithCloudNode::projectCloud(
+std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2> PredictWithCloudNode::projectCloud(
     const pcl::PointCloud<pcl::PointXYZ>& cloud, const vision_msgs::Detection2DArrayConstPtr detections2d_msg,
     const std_msgs::Header header)
 {
@@ -106,7 +106,7 @@ std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2> TrackerWithC
   return std::forward_as_tuple(detections3d_msg, combine_detection_cloud_msg);
 }
 
-pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
                                                                             const std_msgs::Header header)
 {
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
@@ -124,7 +124,7 @@ pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(cons
 }
 
 pcl::PointCloud<pcl::PointXYZ>
-TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ> cloud)
+PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ> cloud)
 {
   pcl::PointCloud<pcl::PointXYZ> closest_cluster;
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -157,7 +157,7 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   return closest_cluster;
 }
 
-void TrackerWithCloudNode::createBoundingBox(
+void PredictWithCloudNode::createBoundingBox(
     vision_msgs::Detection3DArray& detections3d_msg, const pcl::PointCloud<pcl::PointXYZ> cloud,
     const std::vector<vision_msgs::ObjectHypothesisWithPose> detections_results)
 {
@@ -193,7 +193,7 @@ void TrackerWithCloudNode::createBoundingBox(
 }
 
 visualization_msgs::MarkerArray
-TrackerWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg)
+PredictWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg)
 {
   visualization_msgs::MarkerArray marker_array;
   for (size_t i = 0; i < detections3d_msg.detections.size(); i++)
@@ -225,7 +225,7 @@ TrackerWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& det
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "tracker_with_cloud_node");
-  TrackerWithCloudNode node;
+  ros::init(argc, argv, "predict_with_cloud_node");
+  PredictWithCloudNode node;
   ros::spin();
 }

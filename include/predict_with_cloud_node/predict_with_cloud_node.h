@@ -28,7 +28,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <Eigen/Dense>
 
-class TrackerWithCloudNode
+class PredictWithCloudNode
 {
 private:
   ros::NodeHandle _nh;
@@ -55,7 +55,7 @@ private:
   int _max_cluster_size;
 
 public:
-  TrackerWithCloudNode();
+  PredictWithCloudNode();
   void syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
                     const sensor_msgs::PointCloud2ConstPtr& cloud_msg,
                     const vision_msgs::Detection2DArrayConstPtr& detections2d_msg);
