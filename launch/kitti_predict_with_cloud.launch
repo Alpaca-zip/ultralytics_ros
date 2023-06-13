@@ -45,7 +45,7 @@
     </rosparam>
   </node>
   <!-- Object detection with pointcloud node -->
-  <node name="tracker_with_cloud_node" pkg="ultralytics_ros" type="tracker_with_cloud_node" output="screen">
+  <node name="predict_with_cloud_node" pkg="ultralytics_ros" type="predict_with_cloud_node" output="screen">
     <param name="camera_info_topic" value="$(arg camera_info_topic)"/>
     <param name="lidar_topic" value="$(arg lidar_topic)"/>
     <param name="detection2d_topic" value="$(arg detection_topic)"/>

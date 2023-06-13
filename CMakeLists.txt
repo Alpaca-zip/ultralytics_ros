@@ -55,8 +55,8 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(tracker_with_cloud_node src/tracker_with_cloud_node.cpp)
-target_link_libraries(tracker_with_cloud_node
+add_executable(predict_with_cloud_node src/predict_with_cloud_node.cpp)
+target_link_libraries(predict_with_cloud_node
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${PCL_LIBRARIES}
