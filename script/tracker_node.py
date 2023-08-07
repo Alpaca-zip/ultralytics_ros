@@ -40,6 +40,12 @@ class TrackerNode:
         header = msg.header
         encoding = msg.encoding
         numpy_image = ros_numpy.numpify(msg)
+
+        # Convert RGBA to RGB
+        if numpy_image.shape[2] == 4:  # Check if the image has 4 channels
+        	numpy_image = cv2.cvtColor(numpy_image, cv2.COLOR_RGBA2RGB)
+        	encoding = "bgr8"
+          
         results = self.model.track(
             source=numpy_image,
             conf=self.conf_thres,
