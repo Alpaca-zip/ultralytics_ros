@@ -12,7 +12,8 @@ from vision_msgs.msg import (Detection2D, Detection2DArray,
 class TrackerNode:
     def __init__(self):
         yolo_model = rospy.get_param("~yolo_model", "yolov8n.pt")
-        detection_topic = rospy.get_param("~detection_topic", "detection_result")
+        detection_topic = rospy.get_param(
+            "~detection_topic", "detection_result")
         image_topic = rospy.get_param("~image_topic", "image_raw")
         self.conf_thres = rospy.get_param("~conf_thres", 0.25)
         self.iou_thres = rospy.get_param("~iou_thres", 0.45)
@@ -62,7 +63,8 @@ class TrackerNode:
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = ros_numpy.msgify(Image, plotted_image, encoding=encoding)
+            debug_image_msg = ros_numpy.msgify(
+                Image, plotted_image, encoding=encoding)
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self, results, header):
