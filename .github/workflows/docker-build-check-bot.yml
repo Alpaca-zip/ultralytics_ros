@@ -1,4 +1,4 @@
-name: Docker Build Check
+name: ROS-melodic Docker Build Check
 
 on:
   pull_request:
