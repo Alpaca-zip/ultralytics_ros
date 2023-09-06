@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
+      - name: prune Docker Images
+        run: docker image prune --force
       - name: checkout
         uses: actions/checkout@v2
         with:
@@ -26,4 +28,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          push: false
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ultralytics_ros:melodic
