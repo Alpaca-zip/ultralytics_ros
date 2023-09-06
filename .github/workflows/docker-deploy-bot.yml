@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
+      - name: delete unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache
       - name: checkout
         uses: actions/checkout@v2
       - name: set up QEMU
