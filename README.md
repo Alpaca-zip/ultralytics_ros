@@ -54,7 +54,7 @@ $ roslaunch ultralytics_ros predict_with_cloud.launch debug:=true
   - `max_cluster_size`: Maximum number of points that a cluster needs to contain.
 
 ## Docker with KITTI datasets 🐳
-[![dockeri.co](https://dockerico.blankenship.io/image/alpacazip/pupbot)](https://hub.docker.com/r/alpacazip/pupbot)
+[![dockeri.co](https://dockerico.blankenship.io/image/alpacazip/ultralytics_ros)](https://hub.docker.com/r/alpacazip/ultralytics_ros)
 
 <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/23d5b455-cecf-4705-9e2a-6914e01cc33f" width="600px">
 
