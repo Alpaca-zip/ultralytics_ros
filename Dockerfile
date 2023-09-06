@@ -24,7 +24,7 @@ RUN mkdir -p ~/catkin_ws/src && \
 
 # Clone repository and install using pipenv
 RUN cd ~/catkin_ws/src && \
-    git clone -b feature/docker https://github.com/Alpaca-zip/ultralytics_ros.git && \
+    git clone -b melodic-devel https://github.com/Alpaca-zip/ultralytics_ros.git && \
     python3 -m pip install pipenv==2021.5.29 && \
     cd ultralytics_ros && \
     pipenv install
