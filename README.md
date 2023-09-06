@@ -1,4 +1,4 @@
-# ultralytics_ros [![ROS-melodic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml/badge.svg?branch=melodic-devel&event=pull_request)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml)
+# ultralytics_ros [![ROS-melodic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml/badge.svg?event=pull_request)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml)
 ROS package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
 <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a" width="800px">
