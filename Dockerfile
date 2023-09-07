@@ -9,7 +9,7 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install --no-install-recommends -y \
         python3-pip \
         ros-noetic-ros-numpy \
-        ros-humble-vision-msgss && \
+        ros-noetic-vision-msgs && \
     apt-get clean && \
     rm -r /var/lib/apt/lists/*
 
@@ -21,7 +21,7 @@ RUN mkdir -p ~/catkin_ws/src && \
 
 # Clone repository and install using requirements.txt
 RUN cd ~/catkin_ws/src && \
-    git clone -b humble-devel https://github.com/Alpaca-zip/ultralytics_ros.git && \
+    git clone -b noetic-devel https://github.com/Alpaca-zip/ultralytics_ros.git && \
     python3 -m pip install -r ultralytics_ros/requirements.txt
 
 # Build the ROS package
