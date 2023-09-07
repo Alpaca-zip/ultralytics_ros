@@ -50,7 +50,7 @@ $ roslaunch ultralytics_ros tracker_with_cloud.launch debug:=true
   - `cluster_tolerance`: Spatial cluster tolerance as a measure in the L2 Euclidean space.
   - `min_cluster_size`: Minimum number of points that a cluster needs to contain.
   - `max_cluster_size`: Maximum number of points that a cluster needs to contain.
-## Docker with KITTI datasets ?³
+## Docker with KITTI datasets 🐳
 [![dockeri.co](https://dockerico.blankenship.io/image/alpacazip/ultralytics_ros)](https://hub.docker.com/r/alpacazip/ultralytics_ros)
 
 ### Docker Pull & Run
