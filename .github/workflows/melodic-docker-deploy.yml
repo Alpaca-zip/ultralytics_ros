@@ -1,4 +1,4 @@
-name: Docker Image Deployment
+name: ROS-melodic Docker Image Deployment
 
 on:
   pull_request:

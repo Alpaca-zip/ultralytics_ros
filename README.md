@@ -1,4 +1,4 @@
-# ultralytics_ros [![ROS-melodic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml/badge.svg?event=pull_request)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml)
+# ultralytics_ros [![ROS-melodic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/melodic-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/melodic-docker-build-check.yml)
 ROS package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
 <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a" width="800px">
@@ -56,8 +56,6 @@ $ roslaunch ultralytics_ros predict_with_cloud.launch debug:=true
 ## Docker with KITTI datasets 🐳
 [![dockeri.co](https://dockerico.blankenship.io/image/alpacazip/ultralytics_ros)](https://hub.docker.com/r/alpacazip/ultralytics_ros)
 
-<img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/23d5b455-cecf-4705-9e2a-6914e01cc33f" width="600px">
-
 ### Docker Pull & Run
 ```
 $ docker pull alpacazip/ultralytics_ros:melodic
@@ -68,5 +66,5 @@ $ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:melodic
 ```
 $ roscd ultralytics_ros && pipenv shell
 $ roslaunch ultralytics_ros kitti_predict_with_cloud.launch
-$ rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
+$ cd ~/. && rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
 ```
