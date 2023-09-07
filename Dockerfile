@@ -9,7 +9,7 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install --no-install-recommends -y \
         python3-pip \
         ros-noetic-ros-numpy \
-        ros-noetic-vision-msgs && \
+        ros-humble-vision-msgss && \
     apt-get clean && \
     rm -r /var/lib/apt/lists/*
 
