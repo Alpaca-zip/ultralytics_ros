@@ -1,4 +1,4 @@
-# ultralytics_ros [![ROS-noetic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml/badge.svg?event=pull_request)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/docker-build-check-bot.yml)
+# ultralytics_ros [![ROS-noetic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/noetic-docker-build-check.yml/badge.svg?event=pull_request)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/noetic-docker-build-check.yml)
 ROS package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
 <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a" width="800px">
@@ -50,7 +50,7 @@ $ roslaunch ultralytics_ros tracker_with_cloud.launch debug:=true
   - `cluster_tolerance`: Spatial cluster tolerance as a measure in the L2 Euclidean space.
   - `min_cluster_size`: Minimum number of points that a cluster needs to contain.
   - `max_cluster_size`: Maximum number of points that a cluster needs to contain.
-## Docker with KITTI datasets üê≥
+## Docker with KITTI datasets ?ê≥
 [![dockeri.co](https://dockerico.blankenship.io/image/alpacazip/ultralytics_ros)](https://hub.docker.com/r/alpacazip/ultralytics_ros)
 
 ### Docker Pull & Run
