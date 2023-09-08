@@ -63,7 +63,8 @@ class TrackerNode:
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
+            debug_image_msg = self.bridge.cv2_to_imgmsg(
+                plotted_image, encoding="bgr8")
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self, results, header):
