@@ -9,7 +9,7 @@ endif()
 find_package(catkin REQUIRED COMPONENTS
   rospy
   roscpp
-  ros_numpy
+  cv_bridge
   pcl_ros
   tf2_ros
   std_msgs
@@ -22,17 +22,17 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
 )
 
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
     include
-  LIBRARIES
-    ${PROJECT_NAME}
   CATKIN_DEPENDS
+    rospy
     roscpp
+    cv_bridge
     pcl_ros
     tf2_ros
     std_msgs
@@ -43,22 +43,20 @@ catkin_package(
     image_geometry
     image_transport
     message_filters
-  DEPENDS
-    PCL
 )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 add_executable(tracker_with_cloud_node src/tracker_with_cloud_node.cpp)
 target_link_libraries(tracker_with_cloud_node
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-  ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
