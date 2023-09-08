@@ -1,4 +1,4 @@
-# Use tiryoh/ros-desktop-vnc:melodic as the base image
+# Use tiryoh/ros-desktop-vnc:noetic as the base image
 FROM tiryoh/ros-desktop-vnc:noetic
 
 # Set Environment Variables

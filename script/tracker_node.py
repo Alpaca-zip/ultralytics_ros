@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ros_numpy
+import cv_bridge
 import roslib.packages
 import rospy
 from sensor_msgs.msg import Image
@@ -36,11 +36,11 @@ class TrackerNode:
         self.detection_pub = rospy.Publisher(
             detection_topic, Detection2DArray, queue_size=1
         )
+        self.bridge = cv_bridge.CvBridge()
 
     def image_callback(self, msg):
         header = msg.header
-        encoding = msg.encoding
-        numpy_image = ros_numpy.numpify(msg)
+        numpy_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         results = self.model.track(
             source=numpy_image,
             conf=self.conf_thres,
@@ -51,7 +51,7 @@ class TrackerNode:
             verbose=False,
         )
         self.publish_detection(results, header)
-        self.publish_debug_image(results, encoding)
+        self.publish_debug_image(results, "bgr8")
 
     def publish_debug_image(self, results, encoding):
         if self.debug and results is not None:
@@ -63,8 +63,7 @@ class TrackerNode:
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = ros_numpy.msgify(
-                Image, plotted_image, encoding=encoding)
+            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self, results, header):

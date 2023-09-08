@@ -8,7 +8,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
   <depend>roscpp</depend>
-  <depend>ros_numpy</depend>
+  <depend>cv_bridge</depend>
   <depend>pcl_ros</depend>
   <depend>tf2_ros</depend>
   <depend>std_msgs</depend>
