@@ -1,5 +1,5 @@
 # Use tiryoh/ros2-desktop-vnc:humble as the base image
-FROM tiryoh/ros2-desktop-vnc:humble
+FROM tiryoh/ros2-desktop-vnc:humble-20230611T1926
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
