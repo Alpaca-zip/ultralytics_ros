@@ -3,12 +3,12 @@
   <arg name="yolo_model" default="yolov8n.pt"/>
   <arg name="publish_rate" default="10"/>
   <arg name="detection_topic" default="detection_result"/>
-  <arg name="image_topic" default="image_raw"/>
+  <arg name="image_topic" default="kitti/camera_color_left/image_raw"/>
   <arg name="conf_thres" default="0.25"/>
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
   <arg name="tracker" default="bytetrack.yaml"/>
-  <arg name="debug" default="false"/>
+  <arg name="debug" default="true"/>
   <arg name="debug_conf" default="true"/>
   <arg name="debug_line_width" default="1"/>
   <arg name="debug_font_size" default="1"/>

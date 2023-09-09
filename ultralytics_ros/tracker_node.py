@@ -16,7 +16,7 @@ class TrackerNode(Node):
         self.declare_parameter("yolo_model", "yolov8n.pt")
         self.declare_parameter("publish_rate", 10)
         self.declare_parameter("detection_topic", "detection_result")
-        self.declare_parameter("input_topic", "image_raw")
+        self.declare_parameter("image_topic", "image_raw")
         self.declare_parameter("conf_thres", 0.25)
         self.declare_parameter("iou_thres", 0.45)
         self.declare_parameter("max_det", 300)
@@ -36,8 +36,8 @@ class TrackerNode(Node):
         detection_topic = (
             self.get_parameter("detection_topic").get_parameter_value().string_value
         )
-        input_topic = (
-            self.get_parameter("input_topic").get_parameter_value().string_value
+        image_topic = (
+            self.get_parameter("image_topic").get_parameter_value().string_value
         )
         self.max_det = self.get_parameter("max_det").get_parameter_value().integer_value
         self.conf_thres = (
@@ -77,9 +77,8 @@ class TrackerNode(Node):
             1.0 / publish_rate, self.publish_detection
         )
         self.header = None
-        self.encoding = None
         self.results = None
-        self.create_subscription(Image, input_topic, self.image_callback, 1)
+        self.create_subscription(Image, image_topic, self.image_callback, 1)
         self.image_pub = self.create_publisher(Image, "debug_image", 1)
         self.detection_pub = self.create_publisher(Detection2DArray, detection_topic, 1)
 
@@ -93,7 +92,7 @@ class TrackerNode(Node):
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, self.encoding)
+            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self):
@@ -118,8 +117,7 @@ class TrackerNode(Node):
 
     def image_callback(self, msg):
         self.header = msg.header
-        self.encoding = msg.encoding
-        numpy_image = self.bridge.imgmsg_to_cv2(msg)
+        numpy_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         self.results = self.model.track(
             source=numpy_image,
             conf=self.conf_thres,
