@@ -16,7 +16,7 @@ class TrackerNode(Node):
         self.declare_parameter("yolo_model", "yolov8n.pt")
         self.declare_parameter("publish_rate", 10)
         self.declare_parameter("detection_topic", "detection_result")
-        self.declare_parameter("input_topic", "image_raw")
+        self.declare_parameter("image_topic", "image_raw")
         self.declare_parameter("conf_thres", 0.25)
         self.declare_parameter("iou_thres", 0.45)
         self.declare_parameter("max_det", 300)
@@ -36,8 +36,8 @@ class TrackerNode(Node):
         detection_topic = (
             self.get_parameter("detection_topic").get_parameter_value().string_value
         )
-        input_topic = (
-            self.get_parameter("input_topic").get_parameter_value().string_value
+        image_topic = (
+            self.get_parameter("image_topic").get_parameter_value().string_value
         )
         self.max_det = self.get_parameter("max_det").get_parameter_value().integer_value
         self.conf_thres = (
@@ -78,7 +78,7 @@ class TrackerNode(Node):
         )
         self.header = None
         self.results = None
-        self.create_subscription(Image, input_topic, self.image_callback, 1)
+        self.create_subscription(Image, image_topic, self.image_callback, 1)
         self.image_pub = self.create_publisher(Image, "debug_image", 1)
         self.detection_pub = self.create_publisher(Detection2DArray, detection_topic, 1)
 
