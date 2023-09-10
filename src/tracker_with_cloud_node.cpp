@@ -46,7 +46,7 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
 }
 
 pcl::PointCloud<pcl::PointXYZ>
-TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr cloud_msg)
+TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
@@ -67,8 +67,8 @@ TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPt
 
 std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2>
 TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                   const vision_msgs::Detection2DArrayConstPtr detections2d_msg,
-                                   const std_msgs::Header header)
+                                   const vision_msgs::Detection2DArrayConstPtr& detections2d_msg,
+                                   const std_msgs::Header& header)
 {
   pcl::PointCloud<pcl::PointXYZ> detection_cloud_raw;
   pcl::PointCloud<pcl::PointXYZ> detection_cloud;
@@ -77,17 +77,17 @@ TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 combine_detection_cloud_msg;
   detections3d_msg.header = header;
-  for (size_t i = 0; i < detections2d_msg->detections.size(); i++)
+  for (const auto & detection : detections2d_msg->detections)
   {
     for (const auto& point : cloud.points)
     {
       cv::Point3d pt_cv(point.x, point.y, point.z);
       cv::Point2d uv = _cam_model.project3dToPixel(pt_cv);
       if (point.z > 0 && uv.x > 0 &&
-          uv.x >= detections2d_msg->detections[i].bbox.center.x - detections2d_msg->detections[i].bbox.size_x / 2 &&
-          uv.x <= detections2d_msg->detections[i].bbox.center.x + detections2d_msg->detections[i].bbox.size_x / 2 &&
-          uv.y >= detections2d_msg->detections[i].bbox.center.y - detections2d_msg->detections[i].bbox.size_y / 2 &&
-          uv.y <= detections2d_msg->detections[i].bbox.center.y + detections2d_msg->detections[i].bbox.size_y / 2)
+          uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
+          uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
+          uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
+          uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
       {
         detection_cloud_raw.points.push_back(point);
       }
@@ -96,7 +96,7 @@ TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
     if (!detection_cloud.points.empty())
     {
       closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
-      createBoundingBox(detections3d_msg, closest_detection_cloud, detections2d_msg->detections[i].results);
+      createBoundingBox(detections3d_msg, closest_detection_cloud, detection.results);
       combine_detection_cloud.insert(combine_detection_cloud.end(), closest_detection_cloud.begin(),
                                      closest_detection_cloud.end());
       detection_cloud_raw.points.clear();
@@ -108,7 +108,7 @@ TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
 }
 
 pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                                                            const std_msgs::Header header)
+                                                                            const std_msgs::Header& header)
 {
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
   geometry_msgs::TransformStamped tf;
@@ -125,7 +125,7 @@ pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(cons
 }
 
 pcl::PointCloud<pcl::PointXYZ>
-TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ> cloud)
+TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud)
 {
   pcl::PointCloud<pcl::PointXYZ> closest_cluster;
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -139,11 +139,11 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   ec.setMaxClusterSize(_max_cluster_size);
   ec.setSearchMethod(tree);
   ec.extract(cluster_indices);
-  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+  for (const auto & cluster_indice : cluster_indices)
   {
     pcl::PointCloud<pcl::PointXYZ> cloud_cluster;
     Eigen::Vector4f centroid;
-    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
+    for (std::vector<int>::const_iterator pit = cluster_indice.indices.begin(); pit != cluster_indice.indices.end(); ++pit)
     {
       cloud_cluster.points.push_back(cloud.points[*pit]);
     }
@@ -159,8 +159,8 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
 }
 
 void TrackerWithCloudNode::createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg,
-                                             const pcl::PointCloud<pcl::PointXYZ> cloud,
-                                             const std::vector<vision_msgs::ObjectHypothesisWithPose> detections_results)
+                                             const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                             const std::vector<vision_msgs::ObjectHypothesisWithPose>& detections_results)
 {
   vision_msgs::Detection3D detection3d;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
