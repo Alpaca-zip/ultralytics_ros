@@ -50,9 +50,9 @@ class TrackerNode:
             verbose=False,
         )
         self.publish_detection(results, header)
-        self.publish_debug_image(results, "bgr8")
+        self.publish_debug_image(results)
 
-    def publish_debug_image(self, results, encoding):
+    def publish_debug_image(self, results):
         if self.debug and results is not None:
             plotted_image = results[0].plot(
                 conf=self.debug_conf,
