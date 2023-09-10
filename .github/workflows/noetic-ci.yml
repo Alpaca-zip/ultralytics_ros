@@ -1,0 +1,99 @@
+name: ROS-noetic Industrial CI
+on:
+  pull_request:
+
+jobs:
+  clang_format_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: noetic
+          CLANG_FORMAT_CHECK: file
+          CLANG_FORMAT_VERSION: "10"
+
+  clang_tidy_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: noetic
+          BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
+          CLANG_TIDY: pedantic
+
+  black_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: noetic
+          BLACK_CHECK: true
+
+  pylint_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: noetic
+          BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
+          PYLINT_ARGS: '--errors-only'
+          PYLINT_CHECK: true
+
+  catkin_lint_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: noetic
+          BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
+          CATKIN_LINT: true
+
+  build_check:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - ROS_DISTRO: noetic
+            ROS_REPO: main
+            BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
+            IMMEDIATE_TEST_OUTPUT: true
+          - ROS_DISTRO: noetic
+            ROS_REPO: testing
+            BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
+            IMMEDIATE_TEST_OUTPUT: true
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}

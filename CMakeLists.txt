@@ -7,19 +7,19 @@ if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
-  rospy
-  roscpp
   cv_bridge
-  pcl_ros
-  tf2_ros
-  std_msgs
-  sensor_msgs
   geometry_msgs
-  vision_msgs
-  visualization_msgs
   image_geometry
   image_transport
   message_filters
+  pcl_ros
+  roscpp
+  rospy
+  sensor_msgs
+  std_msgs
+  tf2_ros
+  vision_msgs
+  visualization_msgs
 )
 
 find_package(Boost REQUIRED)
@@ -27,22 +27,21 @@ find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS
-    include
+  INCLUDE_DIRS include
   CATKIN_DEPENDS
-    rospy
-    roscpp
     cv_bridge
-    pcl_ros
-    tf2_ros
-    std_msgs
-    sensor_msgs
     geometry_msgs
-    vision_msgs
-    visualization_msgs
     image_geometry
     image_transport
     message_filters
+    pcl_ros
+    roscpp
+    rospy
+    sensor_msgs
+    std_msgs
+    tf2_ros
+    vision_msgs
+    visualization_msgs
 )
 
 include_directories(
@@ -59,4 +58,17 @@ target_link_libraries(tracker_with_cloud_node
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
+)
+
+install(PROGRAMS
+  script/tracker_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS tracker_with_cloud_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

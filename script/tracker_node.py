@@ -5,15 +5,13 @@ import roslib.packages
 import rospy
 from sensor_msgs.msg import Image
 from ultralytics import YOLO
-from vision_msgs.msg import (Detection2D, Detection2DArray,
-                             ObjectHypothesisWithPose)
+from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 
 
 class TrackerNode:
     def __init__(self):
         yolo_model = rospy.get_param("~yolo_model", "yolov8n.pt")
-        detection_topic = rospy.get_param(
-            "~detection_topic", "detection_result")
+        detection_topic = rospy.get_param("~detection_topic", "detection_result")
         image_topic = rospy.get_param("~image_topic", "image_raw")
         self.conf_thres = rospy.get_param("~conf_thres", 0.25)
         self.iou_thres = rospy.get_param("~iou_thres", 0.45)
@@ -51,9 +49,9 @@ class TrackerNode:
             verbose=False,
         )
         self.publish_detection(results, header)
-        self.publish_debug_image(results, "bgr8")
+        self.publish_debug_image(results)
 
-    def publish_debug_image(self, results, encoding):
+    def publish_debug_image(self, results):
         if self.debug and results is not None:
             plotted_image = results[0].plot(
                 conf=self.debug_conf,
@@ -63,8 +61,7 @@ class TrackerNode:
                 labels=self.debug_labels,
                 boxes=self.debug_boxes,
             )
-            debug_image_msg = self.bridge.cv2_to_imgmsg(
-                plotted_image, encoding="bgr8")
+            debug_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
             self.image_pub.publish(debug_image_msg)
 
     def publish_detection(self, results, header):
