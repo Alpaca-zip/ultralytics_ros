@@ -3,16 +3,16 @@ from glob import glob
 
 from setuptools import setup
 
-package_name = "ultralytics_ros"
+PACKAGE_NAME = "ultralytics_ros"
 
 setup(
-    name=package_name,
+    name=PACKAGE_NAME,
     version="0.0.0",
-    packages=[package_name],
+    packages=[PACKAGE_NAME],
     data_files=[
-        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
-        ("share/" + package_name, ["package.xml"]),
-        (os.path.join("share", package_name, "launch"), glob("launch/*")),
+        ("share/ament_index/resource_index/packages", ["resource/" + PACKAGE_NAME]),
+        ("share/" + PACKAGE_NAME, ["package.xml"]),
+        (os.path.join("share", PACKAGE_NAME, "launch"), glob("launch/*")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
