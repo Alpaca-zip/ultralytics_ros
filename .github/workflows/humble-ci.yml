@@ -55,6 +55,7 @@ jobs:
         uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_DISTRO: humble
+          BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
           PYLINT_ARGS: '--errors-only'
           PYLINT_CHECK: true
 
