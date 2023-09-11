@@ -1,4 +1,4 @@
-# ultralytics_ros [![ROS2-humble Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml)
+# ultralytics_ros [![ROS2-humble Industrial CI](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-ci.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-ci.yml) [![ROS2-humble Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml)
 ROS2 package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
 |  `tracker_node`  |  `tracker_with_cloud_node`  |
