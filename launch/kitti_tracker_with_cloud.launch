@@ -18,8 +18,8 @@
   <arg name="lidar_topic" default="kitti/velo/pointcloud"/>
   <arg name="detection3d_topic" default="detection3d_result"/>
   <arg name="cluster_tolerance" default="0.5"/>
-  <arg name="min_cluster_size" default="100"/>
-  <arg name="max_cluster_size" default="25000"/>
+  <arg name="min_cluster_size" default="10"/>
+  <arg name="max_cluster_size" default="300"/>
   <arg name="use_sim_time" default="true"/>
   <param if="$(arg use_sim_time)" name="use_sim_time" value="true"/>
   <!-- Object detection node -->
