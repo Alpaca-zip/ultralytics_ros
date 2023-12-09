@@ -20,11 +20,24 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   vision_msgs
   visualization_msgs
+  message_generation
 )
 
 find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
+
+add_message_files(
+  FILES
+  YoloResult.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  vision_msgs
+  sensor_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -42,6 +55,7 @@ catkin_package(
     tf2_ros
     vision_msgs
     visualization_msgs
+    message_runtime
 )
 
 include_directories(
