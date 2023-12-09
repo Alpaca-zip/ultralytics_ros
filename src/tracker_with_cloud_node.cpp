@@ -1,25 +1,25 @@
 #include "tracker_with_cloud_node/tracker_with_cloud_node.h"
 
-TrackerWithCloudNode::TrackerWithCloudNode() : _pnh("~")
+TrackerWithCloudNode::TrackerWithCloudNode() : pnh_("~")
 {
-  _pnh.param<std::string>("camera_info_topic", _camera_info_topic, "camera_info");
-  _pnh.param<std::string>("lidar_topic", _lidar_topic, "points_raw");
-  _pnh.param<std::string>("detection2d_topic", _detection2d_topic, "detection2d_result");
-  _pnh.param<std::string>("detection3d_topic", _detection3d_topic, "detection3d_result");
-  _pnh.param<float>("cluster_tolerance", _cluster_tolerance, 0.5);
-  _pnh.param<int>("min_cluster_size", _min_cluster_size, 100);
-  _pnh.param<int>("max_cluster_size", _max_cluster_size, 25000);
-  _camera_info_sub.subscribe(_nh, _camera_info_topic, 1);
-  _lidar_sub.subscribe(_nh, _lidar_topic, 1);
-  _detection2d_sub.subscribe(_nh, _detection2d_topic, 1);
-  _detection_cloud_pub = _nh.advertise<sensor_msgs::PointCloud2>("detection_cloud", 1);
-  _detection3d_pub = _nh.advertise<vision_msgs::Detection3DArray>(_detection3d_topic, 1);
-  _marker_pub = _nh.advertise<visualization_msgs::MarkerArray>("detection_marker", 1);
-  _sensor_fusion_sync = boost::make_shared<message_filters::Synchronizer<_sensor_fusion_sync_subs>>(10);
-  _sensor_fusion_sync->connectInput(_camera_info_sub, _lidar_sub, _detection2d_sub);
-  _sensor_fusion_sync->registerCallback(boost::bind(&TrackerWithCloudNode::syncCallback, this, _1, _2, _3));
-  _tf_buffer.reset(new tf2_ros::Buffer(ros::Duration(2.0), true));
-  _tf_listener.reset(new tf2_ros::TransformListener(*_tf_buffer));
+  pnh_.param<std::string>("camera_info_topic", camera_info_topic_, "camera_info");
+  pnh_.param<std::string>("lidar_topic", lidar_topic_, "points_raw");
+  pnh_.param<std::string>("detection2d_topic", detection2d_topic_, "detection2d_result");
+  pnh_.param<std::string>("detection3d_topic", detection3d_topic_, "detection3d_result");
+  pnh_.param<float>("cluster_tolerance", cluster_tolerance_, 0.5);
+  pnh_.param<int>("min_cluster_size", min_cluster_size_, 100);
+  pnh_.param<int>("max_cluster_size", max_cluster_size_, 25000);
+  camera_info_sub_.subscribe(nh_, camera_info_topic_, 1);
+  lidar_sub_.subscribe(nh_, lidar_topic_, 1);
+  detection2d_sub_.subscribe(nh_, detection2d_topic_, 1);
+  detection_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("detection_cloud", 1);
+  detection3d_pub_ = nh_.advertise<vision_msgs::Detection3DArray>(detection3d_topic_, 1);
+  marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("detection_marker", 1);
+  sensor_fusion_sync_ = boost::make_shared<message_filters::Synchronizer<sensor_fusion_sync_subs_>>(10);
+  sensor_fusion_sync_->connectInput(camera_info_sub_, lidar_sub_, detection2d_sub_);
+  sensor_fusion_sync_->registerCallback(boost::bind(&TrackerWithCloudNode::syncCallback, this, _1, _2, _3));
+  tf_buffer_.reset(new tf2_ros::Buffer(ros::Duration(2.0), true));
+  tf_listener_.reset(new tf2_ros::TransformListener(*tf_buffer_));
 }
 
 void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
@@ -31,7 +31,7 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
   sensor_msgs::PointCloud2 detection_cloud_msg;
   visualization_msgs::MarkerArray marker_array_msg;
 
-  _cam_model.fromCameraInfo(camera_info_msg);
+  cam_model_.fromCameraInfo(camera_info_msg);
 
   transformed_cloud = msg2TransformedCloud(cloud_msg);
 
@@ -40,9 +40,9 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
 
   marker_array_msg = createMarkerArray(detections3d_msg);
 
-  _detection3d_pub.publish(detections3d_msg);
-  _detection_cloud_pub.publish(detection_cloud_msg);
-  _marker_pub.publish(marker_array_msg);
+  detection3d_pub_.publish(detections3d_msg);
+  detection_cloud_pub_.publish(detection_cloud_msg);
+  marker_pub_.publish(marker_array_msg);
 }
 
 pcl::PointCloud<pcl::PointXYZ>
@@ -54,8 +54,8 @@ TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPt
   geometry_msgs::TransformStamped tf;
   try
   {
-    tf = _tf_buffer->lookupTransform(_cam_model.tfFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp);
-    pcl_ros::transformPointCloud(_cam_model.tfFrame(), tf.transform, *cloud_msg, transformed_cloud_msg);
+    tf = tf_buffer_->lookupTransform(cam_model_.tfFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp);
+    pcl_ros::transformPointCloud(cam_model_.tfFrame(), tf.transform, *cloud_msg, transformed_cloud_msg);
     pcl::fromROSMsg(transformed_cloud_msg, transformed_cloud);
   }
   catch (tf2::TransformException& e)
@@ -82,7 +82,7 @@ TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
     for (const auto& point : cloud.points)
     {
       cv::Point3d pt_cv(point.x, point.y, point.z);
-      cv::Point2d uv = _cam_model.project3dToPixel(pt_cv);
+      cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
       if (point.z > 0 && uv.x > 0 && uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
           uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
           uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
@@ -113,7 +113,7 @@ pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(cons
   geometry_msgs::TransformStamped tf;
   try
   {
-    tf = _tf_buffer->lookupTransform(header.frame_id, _cam_model.tfFrame(), header.stamp);
+    tf = tf_buffer_->lookupTransform(header.frame_id, cam_model_.tfFrame(), header.stamp);
     pcl_ros::transformPointCloud(cloud, transformed_cloud, tf.transform);
   }
   catch (tf2::TransformException& e)
@@ -133,9 +133,9 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   float min_distance = std::numeric_limits<float>::max();
   tree->setInputCloud(cloud.makeShared());
   ec.setInputCloud(cloud.makeShared());
-  ec.setClusterTolerance(_cluster_tolerance);
-  ec.setMinClusterSize(_min_cluster_size);
-  ec.setMaxClusterSize(_max_cluster_size);
+  ec.setClusterTolerance(cluster_tolerance_);
+  ec.setMinClusterSize(min_cluster_size_);
+  ec.setMaxClusterSize(max_cluster_size_);
   ec.setSearchMethod(tree);
   ec.extract(cluster_indices);
   for (const auto& cluster_indice : cluster_indices)

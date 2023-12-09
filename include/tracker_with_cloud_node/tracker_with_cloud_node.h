@@ -32,28 +32,28 @@
 class TrackerWithCloudNode
 {
 private:
-  ros::NodeHandle _nh;
-  ros::NodeHandle _pnh;
-  std::string _camera_info_topic;
-  std::string _lidar_topic;
-  std::string _detection2d_topic;
-  std::string _detection3d_topic;
-  ros::Publisher _detection_cloud_pub;
-  ros::Publisher _detection3d_pub;
-  ros::Publisher _marker_pub;
+  ros::NodeHandle nh_;
+  ros::NodeHandle pnh_;
+  std::string camera_info_topic_;
+  std::string lidar_topic_;
+  std::string detection2d_topic_;
+  std::string detection3d_topic_;
+  ros::Publisher detection_cloud_pub_;
+  ros::Publisher detection3d_pub_;
+  ros::Publisher marker_pub_;
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::PointCloud2,
                                                           vision_msgs::Detection2DArray>
-      _sensor_fusion_sync_subs;
-  message_filters::Subscriber<sensor_msgs::CameraInfo> _camera_info_sub;
-  message_filters::Subscriber<sensor_msgs::PointCloud2> _lidar_sub;
-  message_filters::Subscriber<vision_msgs::Detection2DArray> _detection2d_sub;
-  boost::shared_ptr<message_filters::Synchronizer<_sensor_fusion_sync_subs>> _sensor_fusion_sync;
-  boost::shared_ptr<tf2_ros::Buffer> _tf_buffer;
-  boost::shared_ptr<tf2_ros::TransformListener> _tf_listener;
-  image_geometry::PinholeCameraModel _cam_model;
-  float _cluster_tolerance;
-  int _min_cluster_size;
-  int _max_cluster_size;
+      sensor_fusion_sync_subs_;
+  message_filters::Subscriber<sensor_msgs::CameraInfo> camera_info_sub_;
+  message_filters::Subscriber<sensor_msgs::PointCloud2> lidar_sub_;
+  message_filters::Subscriber<vision_msgs::Detection2DArray> detection2d_sub_;
+  boost::shared_ptr<message_filters::Synchronizer<sensor_fusion_sync_subs_>> sensor_fusion_sync_;
+  boost::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  boost::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  image_geometry::PinholeCameraModel cam_model_;
+  float cluster_tolerance_;
+  int min_cluster_size_;
+  int max_cluster_size_;
 
 public:
   TrackerWithCloudNode();
