@@ -30,11 +30,13 @@ class TrackerNode:
         path = roslib.packages.get_pkg_dir("ultralytics_ros")
         self.model = YOLO(f"{path}/models/{yolo_model}")
         self.sub = rospy.Subscriber(
-            self.input_topic, Image, self.image_callback, queue_size=1, buff_size=2**24
+            self.input_topic,
+            Image,
+            self.image_callback,
+            queue_size=1,
+            buff_size=2**24,
         )
-        self.results_pub = rospy.Publisher(
-            self.result_topic, YoloResult, queue_size=1
-        )
+        self.results_pub = rospy.Publisher(self.result_topic, YoloResult, queue_size=1)
         self.result_image_pub = rospy.Publisher(
             self.result_image_topic, Image, queue_size=1
         )
@@ -83,7 +85,7 @@ class TrackerNode:
             detection.results.append(hypothesis)
             detections_msg.detections.append(detection)
         return detections_msg
-    
+
     def create_result_image(self, results):
         plotted_image = results[0].plot(
             conf=self.result_conf,
@@ -95,16 +97,24 @@ class TrackerNode:
         )
         result_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
         return result_image_msg
-    
+
     def create_segmentation_masks(self, results):
         masks_msg = []
         for result in results:
-            if hasattr(result, 'masks') and result.masks is not None:
+            if hasattr(result, "masks") and result.masks is not None:
                 for mask_tensor in result.masks:
-                    mask_numpy = np.squeeze(mask_tensor.data.to('cpu').detach().numpy()).astype(np.uint8) * 255
-                    mask_image_msg = self.bridge.cv2_to_imgmsg(mask_numpy, encoding="mono8")
+                    mask_numpy = (
+                        np.squeeze(mask_tensor.data.to("cpu").detach().numpy()).astype(
+                            np.uint8
+                        )
+                        * 255
+                    )
+                    mask_image_msg = self.bridge.cv2_to_imgmsg(
+                        mask_numpy, encoding="mono8"
+                    )
                     masks_msg.append(mask_image_msg)
         return masks_msg
+
 
 if __name__ == "__main__":
     rospy.init_node("tracker_node")
