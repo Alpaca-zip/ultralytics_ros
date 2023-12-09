@@ -8,6 +8,7 @@
   <arg name="conf_thres" default="0.25"/>
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
+  <arg name="classes" default=""/>
   <arg name="tracker" default="bytetrack.yaml"/>
   <arg name="result_conf" default="true"/>
   <arg name="result_line_width" default="1"/>
@@ -31,13 +32,7 @@
     <param name="result_font" value="$(arg result_font)"/>
     <param name="result_labels" value="$(arg result_labels)"/>
     <param name="result_boxes" value="$(arg result_boxes)"/>
-    <rosparam>
-      # classes: [0] (person)
-      # classes: [1] (bicycle)
-      # classes: [2] (car)
-      # ...
-      # See also : https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
-    </rosparam>
+    <rosparam param="classes" subst_value="true">$(arg classes)</rosparam>
   </node>
 
   <node if="$(arg debug)" name="image_view" pkg="image_view" type="image_view" output="screen">
