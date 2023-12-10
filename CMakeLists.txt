@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_geometry
   image_transport
   message_filters
+  message_generation
+  message_runtime
   pcl_ros
   roscpp
   rospy
@@ -20,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   vision_msgs
   visualization_msgs
-  message_generation
 )
 
 find_package(Boost REQUIRED)
@@ -34,9 +35,9 @@ add_message_files(
 
 generate_messages(
   DEPENDENCIES
+  sensor_msgs
   std_msgs
   vision_msgs
-  sensor_msgs
 )
 
 catkin_package(
@@ -47,6 +48,7 @@ catkin_package(
     image_geometry
     image_transport
     message_filters
+    message_runtime
     pcl_ros
     roscpp
     rospy
@@ -55,7 +57,6 @@ catkin_package(
     tf2_ros
     vision_msgs
     visualization_msgs
-    message_runtime
 )
 
 include_directories(

@@ -11,6 +11,8 @@
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
   <depend>message_filters</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
   <depend>pcl_ros</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>
@@ -19,8 +21,6 @@
   <depend>tf2_ros</depend>
   <depend>vision_msgs</depend>
   <depend>visualization_msgs</depend>
-  <depend>message_generation</depend>
-  <depend>message_runtime</depend>
   <exec_depend>image_view</exec_depend>
   <exec_depend>rviz</exec_depend>
 </package>
