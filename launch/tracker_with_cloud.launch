@@ -10,6 +10,7 @@
   <arg name="max_det" default="300"/>
   <arg name="classes" default=""/>
   <arg name="tracker" default="bytetrack.yaml"/>
+  <arg name="device" default=""/>
   <arg name="result_conf" default="true"/>
   <arg name="result_line_width" default="1"/>
   <arg name="result_font_size" default="1"/>
@@ -41,6 +42,7 @@
     <param name="result_labels" value="$(arg result_labels)"/>
     <param name="result_boxes" value="$(arg result_boxes)"/>
     <rosparam param="classes" subst_value="true">$(arg classes)</rosparam>
+    <rosparam param="device" subst_value="true">$(arg device)</rosparam>
   </node>
 
   <node name="tracker_with_cloud_node" pkg="ultralytics_ros" type="tracker_with_cloud_node" output="screen">
