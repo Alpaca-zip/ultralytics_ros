@@ -29,6 +29,10 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
                                         const sensor_msgs::PointCloud2ConstPtr& cloud_msg,
                                         const ultralytics_ros::YoloResultConstPtr& yolo_result_msg)
 {
+  ros::Time current_call_time = ros::Time::now();
+  ros::Duration callback_interval = current_call_time - last_call_time_;
+  last_call_time_ = current_call_time;
+
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud;
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 detection_cloud_msg;
@@ -37,7 +41,7 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
   cam_model_.fromCameraInfo(camera_info_msg);
   transformed_cloud = msg2TransformedCloud(cloud_msg);
   projectCloud(transformed_cloud, yolo_result_msg, cloud_msg->header, detections3d_msg, detection_cloud_msg);
-  marker_array_msg = createMarkerArray(detections3d_msg);
+  marker_array_msg = createMarkerArray(detections3d_msg, callback_interval.toSec());
 
   detection3d_pub_.publish(detections3d_msg);
   detection_cloud_pub_.publish(detection_cloud_msg);
@@ -250,7 +254,7 @@ void TrackerWithCloudNode::createBoundingBox(
 }
 
 visualization_msgs::MarkerArray
-TrackerWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg)
+TrackerWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg, const double& duration)
 {
   visualization_msgs::MarkerArray marker_array;
   for (size_t i = 0; i < detections3d_msg.detections.size(); i++)
@@ -273,7 +277,7 @@ TrackerWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& det
       marker.color.g = 1.0;
       marker.color.b = 0.0;
       marker.color.a = 0.5;
-      marker.lifetime = ros::Duration(0.5);
+      marker.lifetime = ros::Duration(duration);
       marker_array.markers.push_back(marker);
     }
   }

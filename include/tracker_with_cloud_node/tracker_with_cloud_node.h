@@ -44,6 +44,7 @@ private:
   ros::Publisher detection_cloud_pub_;
   ros::Publisher detection3d_pub_;
   ros::Publisher marker_pub_;
+  ros::Time last_call_time_;
   message_filters::Subscriber<sensor_msgs::CameraInfo> camera_info_sub_;
   message_filters::Subscriber<sensor_msgs::PointCloud2> lidar_sub_;
   message_filters::Subscriber<ultralytics_ros::YoloResult> yolo_result_sub_;
@@ -81,5 +82,6 @@ public:
   void createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg,
                          const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                          const std::vector<vision_msgs::ObjectHypothesisWithPose>& detections_results);
-  visualization_msgs::MarkerArray createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg);
+  visualization_msgs::MarkerArray createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg,
+                                                    const double& duration);
 };
