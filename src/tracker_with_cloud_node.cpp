@@ -171,6 +171,12 @@ TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
+  voxel_grid.setInputCloud(cloud);
+  voxel_grid.setLeafSize(0.5, 0.5, 0.5);  // TODO: changes
+  voxel_grid.filter(*downsampled_cloud);
+
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   std::vector<pcl::PointIndices> cluster_indices;
   pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
@@ -179,7 +185,7 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   ec.setMinClusterSize(min_cluster_size_);
   ec.setMaxClusterSize(max_cluster_size_);
   ec.setSearchMethod(tree);
-  ec.setInputCloud(cloud);
+  ec.setInputCloud(downsampled_cloud);
   ec.extract(cluster_indices);
 
   float min_distance = std::numeric_limits<float>::max();
@@ -190,7 +196,7 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>);
     for (const auto& indice : cluster.indices)
     {
-      cloud_cluster->push_back((*cloud)[indice]);
+      cloud_cluster->push_back((*downsampled_cloud)[indice]);
     }
 
     Eigen::Vector4f centroid;
