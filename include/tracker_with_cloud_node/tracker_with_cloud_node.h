@@ -56,6 +56,7 @@ private:
   std::string yolo_result_topic_;
   std::string yolo_3d_result_topic_;
   float cluster_tolerance_;
+  float voxel_leaf_size_;
   int min_cluster_size_;
   int max_cluster_size_;
 

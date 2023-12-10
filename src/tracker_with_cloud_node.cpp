@@ -7,6 +7,7 @@ TrackerWithCloudNode::TrackerWithCloudNode() : pnh_("~")
   pnh_.param<std::string>("yolo_result_topic", yolo_result_topic_, "yolo_result");
   pnh_.param<std::string>("yolo_3d_result_topic", yolo_3d_result_topic_, "yolo_3d_result");
   pnh_.param<float>("cluster_tolerance", cluster_tolerance_, 0.5);
+  pnh_.param<float>("voxel_leaf_size", voxel_leaf_size_, 0.5);
   pnh_.param<int>("min_cluster_size", min_cluster_size_, 100);
   pnh_.param<int>("max_cluster_size", max_cluster_size_, 25000);
 
@@ -174,7 +175,7 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
   voxel_grid.setInputCloud(cloud);
-  voxel_grid.setLeafSize(0.5, 0.5, 0.5);  // TODO: changes
+  voxel_grid.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
   voxel_grid.filter(*downsampled_cloud);
 
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
