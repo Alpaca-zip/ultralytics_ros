@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="debug" default="true"/>
-  <arg name="yolo_model" default="yolov8n-seg.pt"/>
+  <arg name="yolo_model" default="yolov8m-seg.pt"/>
   <arg name="input_topic" default="/kitti/camera_color_left/image_raw"/>
   <arg name="result_topic" default="/yolo_result"/>
   <arg name="result_image_topic" default="/yolo_image"/>
@@ -20,10 +20,10 @@
   <arg name="camera_info_topic" default="/kitti/camera_color_left/camera_info"/>
   <arg name="lidar_topic" default="/kitti/velo/pointcloud"/>
   <arg name="yolo_3d_result_topic" default="/yolo_3d_result"/>
-  <arg name="cluster_tolerance" default="0.5"/>
-  <arg name="voxel_leaf_size" default="0.5"/>
-  <arg name="min_cluster_size" default="10"/>
-  <arg name="max_cluster_size" default="300"/>
+  <arg name="cluster_tolerance" default="0.3"/>
+  <arg name="voxel_leaf_size" default="0.1"/>
+  <arg name="min_cluster_size" default="100"/>
+  <arg name="max_cluster_size" default="10000"/>
 
   <node name="tracker_node" pkg="ultralytics_ros" type="tracker_node.py" output="screen">
     <param name="yolo_model" value="$(arg yolo_model)"/>
