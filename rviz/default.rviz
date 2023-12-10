@@ -97,7 +97,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /debug_image
+      Image Topic: /yolo_image
       Max Value: 1
       Median window: 5
       Min Value: 0

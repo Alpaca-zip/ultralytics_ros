@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_geometry
   image_transport
   message_filters
+  message_generation
+  message_runtime
   pcl_ros
   roscpp
   rospy
@@ -26,6 +28,18 @@ find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
+add_message_files(
+  FILES
+  YoloResult.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  sensor_msgs
+  std_msgs
+  vision_msgs
+)
+
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
@@ -34,6 +48,7 @@ catkin_package(
     image_geometry
     image_transport
     message_filters
+    message_runtime
     pcl_ros
     roscpp
     rospy
