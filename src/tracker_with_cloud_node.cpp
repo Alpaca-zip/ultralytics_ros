@@ -50,34 +50,81 @@ void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
 {
   pcl::PointCloud<pcl::PointXYZ> combine_detection_cloud;
   detections3d_msg.header = header;
+  detections3d_msg.header.stamp = yolo_result_msg->header.stamp;
 
-  for (const auto& detection : yolo_result_msg->detections.detections)
+  for (size_t i = 0; i < yolo_result_msg->detections.detections.size(); i++)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud_raw(new pcl::PointCloud<pcl::PointXYZ>);
-    for (const auto& point : cloud->points)
+
+    if (yolo_result_msg->masks.empty())
     {
-      cv::Point3d pt_cv(point.x, point.y, point.z);
-      cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
-      if (point.z > 0 && uv.x > 0 && uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
-          uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
-          uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
-          uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
-      {
-        detection_cloud_raw->points.push_back(point);
-      }
+      processPointsWithBbox(cloud, yolo_result_msg->detections.detections[i], detection_cloud_raw);
+    }
+    else
+    {
+      processPointsWithMask(cloud, yolo_result_msg->masks[i], detection_cloud_raw);
     }
 
     if (!detection_cloud_raw->points.empty())
     {
       pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud = cloud2TransformedCloud(detection_cloud_raw, header);
       pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
-      createBoundingBox(detections3d_msg, closest_detection_cloud, detection.results);
+      createBoundingBox(detections3d_msg, closest_detection_cloud, yolo_result_msg->detections.detections[i].results);
       combine_detection_cloud += *closest_detection_cloud;
     }
   }
 
   pcl::toROSMsg(combine_detection_cloud, combine_detection_cloud_msg);
   combine_detection_cloud_msg.header = header;
+}
+
+void TrackerWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                                                 const vision_msgs::Detection2D& detection,
+                                                 pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw)
+{
+  for (const auto& point : cloud->points)
+  {
+    cv::Point3d pt_cv(point.x, point.y, point.z);
+    cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
+    if (point.z > 0 && uv.x > 0 && uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
+        uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
+        uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
+        uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
+    {
+      detection_cloud_raw->points.push_back(point);
+    }
+  }
+}
+
+void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                                                 const sensor_msgs::Image& mask,
+                                                 pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw)
+{
+  cv_bridge::CvImagePtr cv_ptr;
+
+  try
+  {
+    cv_ptr = cv_bridge::toCvCopy(mask, sensor_msgs::image_encodings::MONO8);
+  }
+  catch (cv_bridge::Exception& e)
+  {
+    ROS_ERROR("cv_bridge exception: %s", e.what());
+    return;
+  }
+
+  for (const auto& point : cloud->points)
+  {
+    cv::Point3d pt_cv(point.x, point.y, point.z);
+    cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
+
+    if (point.z > 0 && uv.x >= 0 && uv.x < cv_ptr->image.cols && uv.y >= 0 && uv.y < cv_ptr->image.rows)
+    {
+      if (cv_ptr->image.at<uchar>(cv::Point(uv.x, uv.y)) > 0)
+      {
+        detection_cloud_raw->points.push_back(point);
+      }
+    }
+  }
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr

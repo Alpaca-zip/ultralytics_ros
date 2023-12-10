@@ -55,6 +55,7 @@ class TrackerNode:
             classes=self.classes,
             tracker=self.tracker,
             verbose=False,
+            retina_masks=True,
         )
 
         if results is not None:

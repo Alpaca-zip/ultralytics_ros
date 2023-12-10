@@ -28,6 +28,7 @@
 #include <pcl_ros/transforms.h>
 
 #include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
 #include <Eigen/Dense>
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::PointCloud2,
@@ -66,6 +67,11 @@ public:
                     const ultralytics_ros::YoloResultConstPtr& yolo_result_msg, const std_msgs::Header& header,
                     vision_msgs::Detection3DArray& detections3d_msg,
                     sensor_msgs::PointCloud2& combine_detection_cloud_msg);
+  void processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                             const vision_msgs::Detection2D& detection,
+                             pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw);
+  void processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const sensor_msgs::Image& mask,
+                             pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw);
   pcl::PointCloud<pcl::PointXYZ>::Ptr msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                                                              const std_msgs::Header& header);
