@@ -54,7 +54,7 @@ jobs:
         uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_DISTRO: melodic
-          PYLINT_ARGS: '--errors-only ignore_modules=ros_numpy,roslib.packages,rospy,sensor_msgs.msg,ultralytics,YOLO,vision_msgs.msg'
+          PYLINT_ARGS: '--errors-only'
           PYLINT_CHECK: true
 
   catkin_lint_check:
