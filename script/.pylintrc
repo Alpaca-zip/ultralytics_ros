@@ -1,2 +1,0 @@
-[TYPECHECK]
-ignored-modules=ros_numpy, roslib.packages, rospy, sensor_msgs.msg, ultralytics, vision_msgs.msg
