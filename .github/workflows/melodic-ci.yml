@@ -1,0 +1,67 @@
+name: ROS-melodic Industrial CI
+on:
+  pull_request:
+
+jobs:
+  clang_format_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: melodic
+          CLANG_FORMAT_CHECK: file
+          CLANG_FORMAT_VERSION: "10"
+
+  clang_tidy_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: melodic
+          CLANG_TIDY: pedantic
+
+  catkin_lint_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: melodic
+          CATKIN_LINT: true
+
+  build_check:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - ROS_DISTRO: melodic
+            ROS_REPO: main
+            IMMEDIATE_TEST_OUTPUT: true
+          - ROS_DISTRO: melodic
+            ROS_REPO: testing
+            IMMEDIATE_TEST_OUTPUT: true
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}

@@ -15,19 +15,16 @@ PredictWithCloudNode::PredictWithCloudNode() : _pnh("~")
   _detection_cloud_pub = _nh.advertise<sensor_msgs::PointCloud2>("detection_cloud", 1);
   _detection3d_pub = _nh.advertise<vision_msgs::Detection3DArray>(_detection3d_topic, 1);
   _marker_pub = _nh.advertise<visualization_msgs::MarkerArray>("detection_marker", 1);
-  _sensor_fusion_sync =
-    boost::make_shared<message_filters::Synchronizer<_sensor_fusion_sync_subs>>(10);
+  _sensor_fusion_sync = boost::make_shared<message_filters::Synchronizer<_sensor_fusion_sync_subs>>(10);
   _sensor_fusion_sync->connectInput(_camera_info_sub, _lidar_sub, _detection2d_sub);
-  _sensor_fusion_sync->registerCallback(
-    boost::bind(&PredictWithCloudNode::syncCallback, this, _1, _2, _3));
+  _sensor_fusion_sync->registerCallback(boost::bind(&PredictWithCloudNode::syncCallback, this, _1, _2, _3));
   _tf_buffer.reset(new tf2_ros::Buffer(ros::Duration(2.0), true));
   _tf_listener.reset(new tf2_ros::TransformListener(*_tf_buffer));
 }
 
-void PredictWithCloudNode::syncCallback(
-  const sensor_msgs::CameraInfo::ConstPtr & camera_info_msg,
-  const sensor_msgs::PointCloud2ConstPtr & cloud_msg,
-  const vision_msgs::Detection2DArrayConstPtr & detections2d_msg)
+void PredictWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
+                                        const sensor_msgs::PointCloud2ConstPtr& cloud_msg,
+                                        const vision_msgs::Detection2DArrayConstPtr& detections2d_msg)
 {
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
   vision_msgs::Detection3DArray detections3d_msg;
@@ -39,7 +36,7 @@ void PredictWithCloudNode::syncCallback(
   transformed_cloud = msg2TransformedCloud(cloud_msg);
 
   std::tie(detections3d_msg, detection_cloud_msg) =
-    projectCloud(transformed_cloud, detections2d_msg, cloud_msg->header);
+      projectCloud(transformed_cloud, detections2d_msg, cloud_msg->header);
 
   marker_array_msg = createMarkerArray(detections3d_msg);
 
@@ -48,29 +45,30 @@ void PredictWithCloudNode::syncCallback(
   _marker_pub.publish(marker_array_msg);
 }
 
-pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::msg2TransformedCloud(
-  const sensor_msgs::PointCloud2ConstPtr cloud_msg)
+pcl::PointCloud<pcl::PointXYZ>
+PredictWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
   sensor_msgs::PointCloud2 transformed_cloud_msg;
   geometry_msgs::TransformStamped tf;
-  try {
-    tf = _tf_buffer->lookupTransform(
-      _cam_model.tfFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp);
-    pcl_ros::transformPointCloud(
-      _cam_model.tfFrame(), tf.transform, *cloud_msg, transformed_cloud_msg);
+  try
+  {
+    tf = _tf_buffer->lookupTransform(_cam_model.tfFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp);
+    pcl_ros::transformPointCloud(_cam_model.tfFrame(), tf.transform, *cloud_msg, transformed_cloud_msg);
     pcl::fromROSMsg(transformed_cloud_msg, transformed_cloud);
-  } catch (tf2::TransformException & e) {
+  }
+  catch (tf2::TransformException& e)
+  {
     ROS_WARN("%s", e.what());
   }
   return transformed_cloud;
 }
 
 std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2>
-PredictWithCloudNode::projectCloud(
-  const pcl::PointCloud<pcl::PointXYZ> & cloud,
-  const vision_msgs::Detection2DArrayConstPtr detections2d_msg, const std_msgs::Header header)
+PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                   const vision_msgs::Detection2DArrayConstPtr& detections2d_msg,
+                                   const std_msgs::Header& header)
 {
   pcl::PointCloud<pcl::PointXYZ> detection_cloud_raw;
   pcl::PointCloud<pcl::PointXYZ> detection_cloud;
@@ -79,31 +77,27 @@ PredictWithCloudNode::projectCloud(
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 combine_detection_cloud_msg;
   detections3d_msg.header = header;
-  for (size_t i = 0; i < detections2d_msg->detections.size(); i++) {
-    for (const auto & point : cloud.points) {
+  for (const auto& detection : detections2d_msg->detections)
+  {
+    for (const auto& point : cloud.points)
+    {
       cv::Point3d pt_cv(point.x, point.y, point.z);
       cv::Point2d uv = _cam_model.project3dToPixel(pt_cv);
-      if (
-        point.z > 0 && uv.x > 0 &&
-        uv.x >= detections2d_msg->detections[i].bbox.center.x -
-                  detections2d_msg->detections[i].bbox.size_x / 2 &&
-        uv.x <= detections2d_msg->detections[i].bbox.center.x +
-                  detections2d_msg->detections[i].bbox.size_x / 2 &&
-        uv.y >= detections2d_msg->detections[i].bbox.center.y -
-                  detections2d_msg->detections[i].bbox.size_y / 2 &&
-        uv.y <= detections2d_msg->detections[i].bbox.center.y +
-                  detections2d_msg->detections[i].bbox.size_y / 2) {
+      if (point.z > 0 && uv.x > 0 && uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
+          uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
+          uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
+          uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
+      {
         detection_cloud_raw.points.push_back(point);
       }
     }
     detection_cloud = cloud2TransformedCloud(detection_cloud_raw, header);
-    if (!detection_cloud.points.empty()) {
+    if (!detection_cloud.points.empty())
+    {
       closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
-      createBoundingBox(
-        detections3d_msg, closest_detection_cloud, detections2d_msg->detections[i].results);
-      combine_detection_cloud.insert(
-        combine_detection_cloud.end(), closest_detection_cloud.begin(),
-        closest_detection_cloud.end());
+      createBoundingBox(detections3d_msg, closest_detection_cloud, detection.results);
+      combine_detection_cloud.insert(combine_detection_cloud.end(), closest_detection_cloud.begin(),
+                                     closest_detection_cloud.end());
       detection_cloud_raw.points.clear();
     }
   }
@@ -112,22 +106,25 @@ PredictWithCloudNode::projectCloud(
   return std::forward_as_tuple(detections3d_msg, combine_detection_cloud_msg);
 }
 
-pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::cloud2TransformedCloud(
-  const pcl::PointCloud<pcl::PointXYZ> & cloud, const std_msgs::Header header)
+pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                                                            const std_msgs::Header& header)
 {
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
   geometry_msgs::TransformStamped tf;
-  try {
+  try
+  {
     tf = _tf_buffer->lookupTransform(header.frame_id, _cam_model.tfFrame(), header.stamp);
     pcl_ros::transformPointCloud(cloud, transformed_cloud, tf.transform);
-  } catch (tf2::TransformException & e) {
+  }
+  catch (tf2::TransformException& e)
+  {
     ROS_WARN("%s", e.what());
   }
   return transformed_cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::euclideanClusterExtraction(
-  const pcl::PointCloud<pcl::PointXYZ> cloud)
+pcl::PointCloud<pcl::PointXYZ>
+PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud)
 {
   pcl::PointCloud<pcl::PointXYZ> closest_cluster;
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -141,17 +138,18 @@ pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::euclideanClusterExtraction(
   ec.setMaxClusterSize(_max_cluster_size);
   ec.setSearchMethod(tree);
   ec.extract(cluster_indices);
-  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin();
-       it != cluster_indices.end(); ++it) {
+  for (const auto& cluster_indice : cluster_indices)
+  {
     pcl::PointCloud<pcl::PointXYZ> cloud_cluster;
     Eigen::Vector4f centroid;
-    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end();
-         ++pit) {
-      cloud_cluster.points.push_back(cloud.points[*pit]);
+    for (int indice : cluster_indice.indices)
+    {
+      cloud_cluster.points.push_back(cloud.points[indice]);
     }
     pcl::compute3DCentroid(cloud_cluster, centroid);
     float distance = centroid.norm();
-    if (distance < min_distance) {
+    if (distance < min_distance)
+    {
       min_distance = distance;
       closest_cluster = cloud_cluster;
     }
@@ -160,8 +158,8 @@ pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::euclideanClusterExtraction(
 }
 
 void PredictWithCloudNode::createBoundingBox(
-  vision_msgs::Detection3DArray & detections3d_msg, const pcl::PointCloud<pcl::PointXYZ> cloud,
-  const std::vector<vision_msgs::ObjectHypothesisWithPose> detections_results)
+    vision_msgs::Detection3DArray& detections3d_msg, const pcl::PointCloud<pcl::PointXYZ>& cloud,
+    const std::vector<vision_msgs::ObjectHypothesisWithPose>& detections_results)
 {
   vision_msgs::Detection3D detection3d;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
@@ -176,8 +174,8 @@ void PredictWithCloudNode::createBoundingBox(
   transform.rotate(Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ()));
   pcl::transformPointCloud(cloud, transformed_cloud, transform);
   pcl::getMinMax3D(transformed_cloud, min_pt, max_pt);
-  transformed_bbox_center = Eigen::Vector4f(
-    (min_pt.x + max_pt.x) / 2, (min_pt.y + max_pt.y) / 2, (min_pt.z + max_pt.z) / 2, 1);
+  transformed_bbox_center =
+      Eigen::Vector4f((min_pt.x + max_pt.x) / 2, (min_pt.y + max_pt.y) / 2, (min_pt.z + max_pt.z) / 2, 1);
   bbox_center = transform.inverse() * transformed_bbox_center;
   detection3d.bbox.center.position.x = bbox_center[0];
   detection3d.bbox.center.position.y = bbox_center[1];
@@ -194,15 +192,16 @@ void PredictWithCloudNode::createBoundingBox(
   detections3d_msg.detections.push_back(detection3d);
 }
 
-visualization_msgs::MarkerArray PredictWithCloudNode::createMarkerArray(
-  const vision_msgs::Detection3DArray & detections3d_msg)
+visualization_msgs::MarkerArray
+PredictWithCloudNode::createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg)
 {
   visualization_msgs::MarkerArray marker_array;
-  for (size_t i = 0; i < detections3d_msg.detections.size(); i++) {
-    if (
-      std::isfinite(detections3d_msg.detections[i].bbox.size.x) &&
-      std::isfinite(detections3d_msg.detections[i].bbox.size.y) &&
-      std::isfinite(detections3d_msg.detections[i].bbox.size.z)) {
+  for (size_t i = 0; i < detections3d_msg.detections.size(); i++)
+  {
+    if (std::isfinite(detections3d_msg.detections[i].bbox.size.x) &&
+        std::isfinite(detections3d_msg.detections[i].bbox.size.y) &&
+        std::isfinite(detections3d_msg.detections[i].bbox.size.z))
+    {
       visualization_msgs::Marker marker;
       marker.header = detections3d_msg.header;
       marker.ns = "detection";
@@ -224,7 +223,7 @@ visualization_msgs::MarkerArray PredictWithCloudNode::createMarkerArray(
   return marker_array;
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "predict_with_cloud_node");
   PredictWithCloudNode node;

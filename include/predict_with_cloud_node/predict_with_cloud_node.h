@@ -41,9 +41,9 @@ private:
   ros::Publisher _detection_cloud_pub;
   ros::Publisher _detection3d_pub;
   ros::Publisher _marker_pub;
-  typedef message_filters::sync_policies::ApproximateTime<
-    sensor_msgs::CameraInfo, sensor_msgs::PointCloud2, vision_msgs::Detection2DArray>
-    _sensor_fusion_sync_subs;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::PointCloud2,
+                                                          vision_msgs::Detection2DArray>
+      _sensor_fusion_sync_subs;
   message_filters::Subscriber<sensor_msgs::CameraInfo> _camera_info_sub;
   message_filters::Subscriber<sensor_msgs::PointCloud2> _lidar_sub;
   message_filters::Subscriber<vision_msgs::Detection2DArray> _detection2d_sub;
@@ -57,22 +57,17 @@ private:
 
 public:
   PredictWithCloudNode();
-  void syncCallback(
-    const sensor_msgs::CameraInfo::ConstPtr & camera_info_msg,
-    const sensor_msgs::PointCloud2ConstPtr & cloud_msg,
-    const vision_msgs::Detection2DArrayConstPtr & detections2d_msg);
-  pcl::PointCloud<pcl::PointXYZ> msg2TransformedCloud(
-    const sensor_msgs::PointCloud2ConstPtr cloud_msg);
-  std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2> projectCloud(
-    const pcl::PointCloud<pcl::PointXYZ> & cloud,
-    const vision_msgs::Detection2DArrayConstPtr detections2d_msg, const std_msgs::Header header);
-  pcl::PointCloud<pcl::PointXYZ> cloud2TransformedCloud(
-    const pcl::PointCloud<pcl::PointXYZ> & cloud, const std_msgs::Header header);
-  pcl::PointCloud<pcl::PointXYZ> euclideanClusterExtraction(
-    const pcl::PointCloud<pcl::PointXYZ> cloud);
-  void createBoundingBox(
-    vision_msgs::Detection3DArray & detections3d_msg, const pcl::PointCloud<pcl::PointXYZ> cloud,
-    const std::vector<vision_msgs::ObjectHypothesisWithPose> detections_results);
-  visualization_msgs::MarkerArray createMarkerArray(
-    const vision_msgs::Detection3DArray & detections3d_msg);
+  void syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
+                    const sensor_msgs::PointCloud2ConstPtr& cloud_msg,
+                    const vision_msgs::Detection2DArrayConstPtr& detections2d_msg);
+  pcl::PointCloud<pcl::PointXYZ> msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
+  std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2>
+  projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+               const vision_msgs::Detection2DArrayConstPtr& detections2d_msg, const std_msgs::Header& header);
+  pcl::PointCloud<pcl::PointXYZ> cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                                        const std_msgs::Header& header);
+  pcl::PointCloud<pcl::PointXYZ> euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud);
+  void createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg, const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                         const std::vector<vision_msgs::ObjectHypothesisWithPose>& detections_results);
+  visualization_msgs::MarkerArray createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg);
 };
