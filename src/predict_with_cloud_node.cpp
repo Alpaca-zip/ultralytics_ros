@@ -46,7 +46,7 @@ void PredictWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
 }
 
 pcl::PointCloud<pcl::PointXYZ>
-PredictWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr cloud_msg)
+PredictWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
@@ -67,8 +67,8 @@ PredictWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPt
 
 std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2>
 PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                   const vision_msgs::Detection2DArrayConstPtr detections2d_msg,
-                                   const std_msgs::Header header)
+                                   const vision_msgs::Detection2DArrayConstPtr& detections2d_msg,
+                                   const std_msgs::Header& header)
 {
   pcl::PointCloud<pcl::PointXYZ> detection_cloud_raw;
   pcl::PointCloud<pcl::PointXYZ> detection_cloud;
@@ -108,7 +108,7 @@ PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
 }
 
 pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                                                            const std_msgs::Header header)
+                                                                            const std_msgs::Header& header)
 {
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
   geometry_msgs::TransformStamped tf;
@@ -125,7 +125,7 @@ pcl::PointCloud<pcl::PointXYZ> PredictWithCloudNode::cloud2TransformedCloud(cons
 }
 
 pcl::PointCloud<pcl::PointXYZ>
-PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ> cloud)
+PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud)
 {
   pcl::PointCloud<pcl::PointXYZ> closest_cluster;
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -139,13 +139,13 @@ PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   ec.setMaxClusterSize(_max_cluster_size);
   ec.setSearchMethod(tree);
   ec.extract(cluster_indices);
-  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+  for (const auto& cluster_indice : cluster_indices)
   {
     pcl::PointCloud<pcl::PointXYZ> cloud_cluster;
     Eigen::Vector4f centroid;
-    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
+    for (int indice : cluster_indice.indices)
     {
-      cloud_cluster.points.push_back(cloud.points[*pit]);
+      cloud_cluster.points.push_back(cloud.points[indice]);
     }
     pcl::compute3DCentroid(cloud_cluster, centroid);
     float distance = centroid.norm();
@@ -158,9 +158,9 @@ PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   return closest_cluster;
 }
 
-void PredictWithCloudNode::createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg,
-                                             const pcl::PointCloud<pcl::PointXYZ> cloud,
-                                             const std::vector<vision_msgs::ObjectHypothesisWithPose> detections_results)
+void PredictWithCloudNode::createBoundingBox(
+    vision_msgs::Detection3DArray& detections3d_msg, const pcl::PointCloud<pcl::PointXYZ>& cloud,
+    const std::vector<vision_msgs::ObjectHypothesisWithPose>& detections_results)
 {
   vision_msgs::Detection3D detection3d;
   pcl::PointCloud<pcl::PointXYZ> transformed_cloud;

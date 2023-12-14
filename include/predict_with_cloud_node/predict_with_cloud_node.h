@@ -60,14 +60,14 @@ public:
   void syncCallback(const sensor_msgs::CameraInfo::ConstPtr& camera_info_msg,
                     const sensor_msgs::PointCloud2ConstPtr& cloud_msg,
                     const vision_msgs::Detection2DArrayConstPtr& detections2d_msg);
-  pcl::PointCloud<pcl::PointXYZ> msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr cloud_msg);
+  pcl::PointCloud<pcl::PointXYZ> msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
   std::tuple<vision_msgs::Detection3DArray, sensor_msgs::PointCloud2>
   projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-               const vision_msgs::Detection2DArrayConstPtr detections2d_msg, const std_msgs::Header header);
+               const vision_msgs::Detection2DArrayConstPtr& detections2d_msg, const std_msgs::Header& header);
   pcl::PointCloud<pcl::PointXYZ> cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                                        const std_msgs::Header header);
-  pcl::PointCloud<pcl::PointXYZ> euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ> cloud);
-  void createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg, const pcl::PointCloud<pcl::PointXYZ> cloud,
-                         const std::vector<vision_msgs::ObjectHypothesisWithPose> detections_results);
+                                                        const std_msgs::Header& header);
+  pcl::PointCloud<pcl::PointXYZ> euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud);
+  void createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg, const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                         const std::vector<vision_msgs::ObjectHypothesisWithPose>& detections_results);
   visualization_msgs::MarkerArray createMarkerArray(const vision_msgs::Detection3DArray& detections3d_msg);
 };
