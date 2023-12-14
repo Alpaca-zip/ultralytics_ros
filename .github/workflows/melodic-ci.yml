@@ -41,6 +41,7 @@ jobs:
         uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_DISTRO: melodic
+          BEFORE_INIT: 'apt update -q && apt install python3-dev'
           BLACK_CHECK: true
 
   pylint_check:
