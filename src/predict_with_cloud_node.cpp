@@ -77,17 +77,17 @@ PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 combine_detection_cloud_msg;
   detections3d_msg.header = header;
-  for (size_t i = 0; i < detections2d_msg->detections.size(); i++)
+  for (const auto & detection : detections2d_msg->detections)
   {
     for (const auto& point : cloud.points)
     {
       cv::Point3d pt_cv(point.x, point.y, point.z);
       cv::Point2d uv = _cam_model.project3dToPixel(pt_cv);
       if (point.z > 0 && uv.x > 0 &&
-          uv.x >= detections2d_msg->detections[i].bbox.center.x - detections2d_msg->detections[i].bbox.size_x / 2 &&
-          uv.x <= detections2d_msg->detections[i].bbox.center.x + detections2d_msg->detections[i].bbox.size_x / 2 &&
-          uv.y >= detections2d_msg->detections[i].bbox.center.y - detections2d_msg->detections[i].bbox.size_y / 2 &&
-          uv.y <= detections2d_msg->detections[i].bbox.center.y + detections2d_msg->detections[i].bbox.size_y / 2)
+          uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
+          uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
+          uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
+          uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
       {
         detection_cloud_raw.points.push_back(point);
       }
@@ -96,7 +96,7 @@ PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
     if (!detection_cloud.points.empty())
     {
       closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
-      createBoundingBox(detections3d_msg, closest_detection_cloud, detections2d_msg->detections[i].results);
+      createBoundingBox(detections3d_msg, closest_detection_cloud, detection.results);
       combine_detection_cloud.insert(combine_detection_cloud.end(), closest_detection_cloud.begin(),
                                      closest_detection_cloud.end());
       detection_cloud_raw.points.clear();
