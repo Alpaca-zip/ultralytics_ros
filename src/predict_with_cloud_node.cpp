@@ -77,14 +77,13 @@ PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 combine_detection_cloud_msg;
   detections3d_msg.header = header;
-  for (const auto & detection : detections2d_msg->detections)
+  for (const auto& detection : detections2d_msg->detections)
   {
     for (const auto& point : cloud.points)
     {
       cv::Point3d pt_cv(point.x, point.y, point.z);
       cv::Point2d uv = _cam_model.project3dToPixel(pt_cv);
-      if (point.z > 0 && uv.x > 0 &&
-          uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
+      if (point.z > 0 && uv.x > 0 && uv.x >= detection.bbox.center.x - detection.bbox.size_x / 2 &&
           uv.x <= detection.bbox.center.x + detection.bbox.size_x / 2 &&
           uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
           uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
