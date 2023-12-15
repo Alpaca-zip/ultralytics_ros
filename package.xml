@@ -6,6 +6,7 @@
   <maintainer email="zip@todo.todo">Alpaca-zip</maintainer>
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>cv_bridge</depend>
   <depend>ros_numpy</depend>
   <depend>geometry_msgs</depend>
   <depend>image_geometry</depend>

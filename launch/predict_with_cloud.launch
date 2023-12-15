@@ -1,59 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="yolo_model" default="yolov8n.pt"/>
-  <arg name="detection_topic" default="detection_result"/>
-  <arg name="image_topic" default="image_raw"/>
+  <arg name="debug" default="false"/>
+  <arg name="yolo_model" default="yolov8m-seg.pt"/>
+  <arg name="input_topic" default="/image_raw"/>
+  <arg name="result_topic" default="/yolo_result"/>
+  <arg name="result_image_topic" default="/yolo_image"/>
   <arg name="conf_thres" default="0.25"/>
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
-  <arg name="debug" default="false"/>
-  <arg name="debug_conf" default="true"/>
-  <arg name="debug_line_width" default="1"/>
-  <arg name="debug_font_size" default="1"/>
-  <arg name="debug_font" default="Arial.ttf"/>
-  <arg name="debug_labels" default="true"/>
-  <arg name="debug_boxes" default="true"/>
-  <arg name="camera_info_topic" default="camera_info"/>
-  <arg name="lidar_topic" default="points_raw"/>
-  <arg name="detection3d_topic" default="detection3d_result"/>
-  <arg name="cluster_tolerance" default="0.5"/>
+  <arg name="classes" default=""/>
+  <arg name="device" default=""/>
+  <arg name="result_conf" default="true"/>
+  <arg name="result_line_width" default="1"/>
+  <arg name="result_font_size" default="1"/>
+  <arg name="result_font" default="Arial.ttf"/>
+  <arg name="result_labels" default="true"/>
+  <arg name="result_boxes" default="true"/>
+
+  <arg name="camera_info_topic" default="/camera_info"/>
+  <arg name="lidar_topic" default="/points_raw"/>
+  <arg name="yolo_3d_result_topic" default="/yolo_3d_result"/>
+  <arg name="cluster_tolerance" default="0.3"/>
+  <arg name="voxel_leaf_size" default="0.1"/>
   <arg name="min_cluster_size" default="100"/>
-  <arg name="max_cluster_size" default="25000"/>
-  <arg name="use_sim_time" default="true"/>
-  <param if="$(arg use_sim_time)" name="use_sim_time" value="true"/>
-  <!-- Object detection node -->
+  <arg name="max_cluster_size" default="10000"/>
+
   <node name="predict_node" pkg="ultralytics_ros" type="predict_node.py" output="screen">
     <param name="yolo_model" value="$(arg yolo_model)"/>
-    <param name="detection_topic" value="$(arg detection_topic)"/>
-    <param name="image_topic" value="$(arg image_topic)"/>
+    <param name="input_topic" value="$(arg input_topic)"/>
+    <param name="result_topic" value="$(arg result_topic)"/>
+    <param name="result_image_topic" value="$(arg result_image_topic)"/>
     <param name="conf_thres" value="$(arg conf_thres)"/>
     <param name="iou_thres" value="$(arg iou_thres)"/>
     <param name="max_det" value="$(arg max_det)"/>
-    <param name="debug" value="$(arg debug)"/>
-    <param name="debug_conf" value="$(arg debug_conf)"/>
-    <param name="debug_line_width" value="$(arg debug_line_width)"/>
-    <param name="debug_font_size" value="$(arg debug_font_size)"/>
-    <param name="debug_font" value="$(arg debug_font)"/>
-    <param name="debug_labels" value="$(arg debug_labels)"/>
-    <param name="debug_boxes" value="$(arg debug_boxes)"/>
-    <rosparam>
-      # classes: [0] (person)
-      # classes: [1] (bicycle)
-      # classes: [2] (car)
-      # ...
-      # See also : https://github.com/ultralytics/ultralytics/blob/main/ultralytics/datasets/coco128.yaml
-    </rosparam>
+    <param name="result_conf" value="$(arg result_conf)"/>
+    <param name="result_line_width" value="$(arg result_line_width)"/>
+    <param name="result_font_size" value="$(arg result_font_size)"/>
+    <param name="result_font" value="$(arg result_font)"/>
+    <param name="result_labels" value="$(arg result_labels)"/>
+    <param name="result_boxes" value="$(arg result_boxes)"/>
+    <rosparam param="classes" subst_value="true">$(arg classes)</rosparam>
+    <rosparam param="device" subst_value="true">$(arg device)</rosparam>
   </node>
-  <!-- Object detection with pointcloud node -->
+
   <node name="predict_with_cloud_node" pkg="ultralytics_ros" type="predict_with_cloud_node" output="screen">
     <param name="camera_info_topic" value="$(arg camera_info_topic)"/>
     <param name="lidar_topic" value="$(arg lidar_topic)"/>
-    <param name="detection2d_topic" value="$(arg detection_topic)"/>
-    <param name="detection3d_topic" value="$(arg detection3d_topic)"/>
+    <param name="yolo_result_topic" value="$(arg result_topic)"/>
+    <param name="yolo_3d_result_topic" value="$(arg yolo_3d_result_topic)"/>
     <param name="cluster_tolerance" value="$(arg cluster_tolerance)"/>
+    <param name="voxel_leaf_size" value="$(arg voxel_leaf_size)"/>
     <param name="min_cluster_size" value="$(arg min_cluster_size)"/>
     <param name="max_cluster_size" value="$(arg max_cluster_size)"/>
   </node>
-  <!-- rviz -->
+
   <node if="$(arg debug)" pkg="rviz" type="rviz" name="rviz" args="-d $(find ultralytics_ros)/rviz/default.rviz"/>
 </launch>

@@ -7,6 +7,7 @@ if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
   ros_numpy
   geometry_msgs
   image_geometry
@@ -43,6 +44,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
+    cv_bridge
     ros_numpy
     geometry_msgs
     image_geometry
