@@ -74,6 +74,7 @@ target_link_libraries(tracker_with_cloud_node
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
 )
+add_dependencies(tracker_with_cloud_node ultralytics_ros_generate_messages_cpp)
 
 install(PROGRAMS
   script/tracker_node.py
