@@ -76,6 +76,7 @@ target_link_libraries(predict_with_cloud_node
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
 )
+add_dependencies(predict_with_cloud_node ultralytics_ros_generate_messages_cpp)
 
 install(PROGRAMS
   script/predict_node.py
