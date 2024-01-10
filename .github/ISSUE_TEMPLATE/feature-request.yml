@@ -1,5 +1,5 @@
 name: Feature Request
-description: 
+description: Suggest a ultralytics_ros idea
 labels: [enhancement]
 body:
   - type: markdown

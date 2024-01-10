@@ -1,5 +1,5 @@
 name: Bug Report
-description: 
+description: Problems with ultralytics_ros
 labels: [bug]
 body:
   - type: markdown
