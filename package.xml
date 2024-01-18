@@ -3,8 +3,8 @@
   <name>ultralytics_ros</name>
   <version>0.0.0</version>
   <description>The ultralytics_ros package</description>
-  <maintainer email="zip@todo.todo">Alpaca-zip</maintainer>
-  <license>TODO</license>
+  <maintainer email="alpaca.zip@gmail.com">Alpaca-zip</maintainer>
+  <license>AGPL-3.0</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
