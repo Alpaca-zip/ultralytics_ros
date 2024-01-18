@@ -17,9 +17,9 @@ setup(
     install_requires=["setuptools"],
     zip_safe=True,
     maintainer="Alpaca-zip",
-    maintainer_email="zip@todo.todo",
+    maintainer_email="alpaca.zip@gmail.com",
     description="The ultralytics_ros package",
-    license="TODO: License declaration",
+    license="AGPL-3.0",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": ["tracker_node = ultralytics_ros.tracker_node:main"],
