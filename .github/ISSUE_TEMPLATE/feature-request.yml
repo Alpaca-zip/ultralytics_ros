@@ -1,0 +1,41 @@
+name: Feature Request
+description: Suggest a ultralytics_ros idea
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a ultralytics_ros Feature Request!
+
+  - type: dropdown
+    attributes:
+      label: Branch
+      description: |
+        Please select the branch you would like to implement this feature on.
+      multiple: true
+      options:
+        - "melodic-devel"
+        - "noetic-devel"
+        - "humble-devel"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: A description of your feature.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional
+      description: Anything else you would like to share?
+
+  - type: checkboxes
+    attributes:
+      label: Are you willing to submit a PR?
+      description: >
+        (Optional) I encourage you to submit a [Pull Request](https://github.com/Alpaca-zip/ultralytics_ros/pulls) (PR) to help improve ultralytics_ros for everyone, especially if you have a good understanding of how to implement a fix or feature.
+      options:
+        - label: Yes I'd like to help by submitting a PR!
