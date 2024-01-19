@@ -11,12 +11,13 @@ ROS package for real-time object detection and segmentation using the Ultralytic
 ## Setup ⚙
 ```
 $ cd ~/catkin_ws/src
-$ git clone -b noetic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
+$ GIT_LFS_SKIP_SMUDGE=1 git clone -b noetic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
 $ python3 -m pip install -r ultralytics_ros/requirements.txt
 $ cd ~/catkin_ws
 $ rosdep install -r -y -i --from-paths .
 $ catkin build
 ```
+**NOTE**: If you want to download KITTI datasets, remove `GIT_LFS_SKIP_SMUDGE=1` from the command line.
 ## Run 🚀
 **`tracker_node`**
 ```
@@ -109,5 +110,5 @@ $ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:noetic
 ### Run tracker_node & tracker_with_cloud_node
 ```
 $ roslaunch ultralytics_ros kitti_tracker_with_cloud.launch
-$ rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
+$ cd ~/catkin_ws/src/ultralytics_ros/rosbag && rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
 ```
