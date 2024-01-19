@@ -19,17 +19,17 @@ RUN mkdir -p ~/colcon_ws/src && \
     /bin/bash -c "source /opt/ros/humble/setup.bash; cd ~/colcon_ws/; colcon build" && \
     echo "source ~/colcon_ws/install/setup.bash" >> ~/.bashrc
 
+# Install Git LFS
+RUN apt-get update && \
+    apt-get install -y git-lfs && \
+    rm -rf /var/lib/apt/lists/* && \
+    git lfs install
+
 # Clone repository and install using requirements.txt
 RUN cd ~/colcon_ws/src && \
     git clone -b humble-devel https://github.com/Alpaca-zip/ultralytics_ros.git && \
-    python3 -m pip install -r ultralytics_ros/requirements.txt
+    cd ultralytics_ros && \
+    python3 -m pip install -r requirements.txt
 
 # Build the ROS2 package
 RUN cd ~/colcon_ws && colcon build
-
-# Download the dataset
-RUN cd ~/ && \
-    wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1kN8boJxfMIl7hjytxdgmzANZBhWV7YXU' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1kN8boJxfMIl7hjytxdgmzANZBhWV7YXU" -O kitti_2011_09_26_drive_0106_synced.zip && \
-    rm -rf /tmp/cookies.txt && \
-    unzip kitti_2011_09_26_drive_0106_synced.zip && \
-    rm kitti_2011_09_26_drive_0106_synced.zip
