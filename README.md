@@ -11,7 +11,7 @@ ROS package for real-time object detection and segmentation using the Ultralytic
 ## Setup ⚙
 ```
 $ cd ~/catkin_ws/src
-$ git clone -b melodic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
+$ GIT_LFS_SKIP_SMUDGE=1 git clone -b melodic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
 $ rosdep install -r -y -i --from-paths .
 $ pip install pipenv
 $ cd ultralytics_ros
@@ -20,6 +20,7 @@ $ pipenv shell
 $ cd ~/catkin_ws
 $ catkin build
 ```
+**NOTE**: If you want to download KITTI datasets, remove `GIT_LFS_SKIP_SMUDGE=1` from the command line.
 ## Run 🚀
 **`predict_node`**
 ```
@@ -114,5 +115,5 @@ $ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:melodic
 ```
 $ roscd ultralytics_ros && pipenv shell
 $ roslaunch ultralytics_ros kitti_predict_with_cloud.launch
-$ cd ~/. && rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
+$ cd ~/catkin_ws/src/ultralytics_ros/rosbag && rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
 ```
