@@ -10,12 +10,13 @@ ROS2 package for real-time object detection using the Ultralytics YOLO, enabling
 ## Setup ⚙
 ```
 $ cd ~/colcon_ws/src
-$ git clone -b humble-devel https://github.com/Alpaca-zip/ultralytics_ros.git
+$ GIT_LFS_SKIP_SMUDGE=1 git clone -b humble-devel https://github.com/Alpaca-zip/ultralytics_ros.git
 $ python3 -m pip install -r ultralytics_ros/requirements.txt
 $ cd ~/colcon_ws
 $ rosdep install -r -y -i --from-paths .
 $ colcon build
 ```
+**NOTE**: If you want to download KITTI datasets, remove `GIT_LFS_SKIP_SMUDGE=1` from the command line.
 ## Run 🚀
 **`tracker_node`**
 ```
@@ -67,5 +68,5 @@ $ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:humble
 ### Run tracker_node & tracker_with_cloud_node
 ```
 $ ros2 launch ultralytics_ros kitti_tracker.launch.xml
-$ ros2 bag play kitti_2011_09_26_drive_0106_synced --clock --loop
+$ cd ~/colcon_ws/src/ultralytics_ros/ros2bag && ros2 bag play kitti_2011_09_26_drive_0106_synced --clock --loop
 ```

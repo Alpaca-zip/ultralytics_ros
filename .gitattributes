@@ -1,0 +1,1 @@
+ros2bag/** filter=lfs diff=lfs merge=lfs -text
