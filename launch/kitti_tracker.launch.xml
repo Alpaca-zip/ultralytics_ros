@@ -16,7 +16,7 @@
   <arg name="debug_labels" default="true"/>
   <arg name="debug_boxes" default="true"/>
   <!-- Object detection node -->
-  <node pkg="ultralytics_ros" exec="tracker_node" output="screen">
+  <node pkg="ultralytics_ros" exec="tracker_node.py" output="screen">
     <param name="yolo_model" value="$(var yolo_model)"/>
     <param name="publish_rate" value="$(var publish_rate)"/>
     <param name="detection_topic" value="$(var detection_topic)"/>

@@ -5,13 +5,14 @@
   <description>The ultralytics_ros package</description>
   <maintainer email="alpaca.zip@gmail.com">Alpaca-zip</maintainer>
   <license>AGPL-3.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
   <depend>rclpy</depend>
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
   <depend>vision_msgs</depend>
-  <depend>image_view</depend>
-  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>image_view</exec_depend>
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
