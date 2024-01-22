@@ -43,6 +43,6 @@ private:
 public:
   TrackerWithCloudNode();
   void syncCallback(const sensor_msgs::msg::CameraInfo::ConstSharedPtr& camera_info_msg,
-                  const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg,
-                  const ultralytics_ros::msg::YoloResult::ConstSharedPtr& yolo_result_msg);
+                    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg,
+                    const ultralytics_ros::msg::YoloResult::ConstSharedPtr& yolo_result_msg);
 };
