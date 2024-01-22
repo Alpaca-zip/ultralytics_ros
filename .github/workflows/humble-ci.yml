@@ -29,6 +29,7 @@ jobs:
         env:
           ROS_DISTRO: humble
           BEFORE_BUILD_TARGET_WORKSPACE: 'apt update -q && python3 -m pip install -q -r requirements.txt'
+          CLANG_TIDY_ARGS: '--extra-arg=-std=c++17'
           CLANG_TIDY: pedantic
 
   black_check:
