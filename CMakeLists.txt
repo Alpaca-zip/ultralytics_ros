@@ -14,23 +14,16 @@ find_package(rclpy REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(ultralytics_ros REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 
-set(msg_files
-  "msg/YoloResult.msg"
-)
-
 rosidl_generate_interfaces(${PROJECT_NAME}
-  ${msg_files}
+  "msg/YoloResult.msg"
   DEPENDENCIES
   sensor_msgs
   std_msgs
   vision_msgs
 )
-
-ament_export_dependencies(rosidl_default_runtime)
 
 include_directories(include)
 
@@ -38,9 +31,11 @@ add_executable(tracker_with_cloud_node src/tracker_with_cloud_node.cpp)
 ament_target_dependencies(tracker_with_cloud_node
   rclcpp
   sensor_msgs
-  ultralytics_ros
   message_filters
 )
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(tracker_with_cloud_node "${cpp_typesupport_target}")
 
 install(TARGETS
   tracker_with_cloud_node
