@@ -20,9 +20,14 @@
 
 TrackerWithCloudNode::TrackerWithCloudNode() : rclcpp::Node("tracker_with_cloud_node")
 {
-  this->declare_parameter<std::string>("camera_info_topic", "camera_info");
-  this->declare_parameter<std::string>("lidar_topic", "points_raw");
-  this->declare_parameter<std::string>("yolo_result_topic", "yolo_result");
+  this->declare_parameter<std::string>("camera_info_topic", "/kitti/camera_color_left/camera_info");
+  this->declare_parameter<std::string>("lidar_topic", "/kitti/velo/pointcloud");
+  this->declare_parameter<std::string>("yolo_result_topic", "/yolo_result");
+  this->declare_parameter<std::string>("yolo_3d_result_topic", "yolo_3d_result");
+  this->declare_parameter<float>("cluster_tolerance", 0.5);
+  this->declare_parameter<float>("voxel_leaf_size", 0.5);
+  this->declare_parameter<int>("min_cluster_size", 100);
+  this->declare_parameter<int>("max_cluster_size_", 25000);
 
   this->get_parameter("camera_info_topic", camera_info_topic_);
   this->get_parameter("lidar_topic", lidar_topic_);
@@ -34,13 +39,268 @@ TrackerWithCloudNode::TrackerWithCloudNode() : rclcpp::Node("tracker_with_cloud_
   sync_->connectInput(camera_info_sub_, lidar_sub_, yolo_result_sub_);
   sync_->registerCallback(std::bind(&TrackerWithCloudNode::syncCallback, this, std::placeholders::_1,
                                     std::placeholders::_2, std::placeholders::_3));
+
+  this->get_parameter("yolo_3d_result_topic", yolo_3d_result_topic_);
+  detection3d_pub_ = this->create_publisher<vision_msgs::msg::Detection3DArray>(yolo_3d_result_topic_, 1);
+  detection_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("detection_cloud", 1);
+  marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("detection_marker", 1);
+
+  last_call_time_ = this->now();
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
-void TrackerWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::ConstSharedPtr& /*camera_info_msg*/,
-                                        const sensor_msgs::msg::PointCloud2::ConstSharedPtr& /*cloud_msg*/,
-                                        const ultralytics_ros::msg::YoloResult::ConstSharedPtr& /*yolo_result_msg*/)
+void TrackerWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::ConstSharedPtr& camera_info_msg,
+                                        const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg,
+                                        const ultralytics_ros::msg::YoloResult::ConstSharedPtr& yolo_result_msg)
 {
-  // TODO
+  rclcpp::Time current_call_time = this->now();
+  rclcpp::Duration callback_interval = current_call_time - last_call_time_;
+  last_call_time_ = current_call_time;
+
+  vision_msgs::msg::Detection3DArray detection3d_array_msg;
+  sensor_msgs::msg::PointCloud2 detection_cloud_msg;
+
+  cam_model_.fromCameraInfo(camera_info_msg);
+  pcl::PointCloud<pcl::PointXYZ> transformed_cloud = msg2TransformedCloud(*cloud_msg, cloud_msg->header);
+  projectCloud(transformed_cloud, *yolo_result_msg, cloud_msg->header, detection3d_array_msg, detection_cloud_msg);
+  visualization_msgs::msg::MarkerArray marker_array_msg =
+      createMarkerArray(detection3d_array_msg, callback_interval.seconds());
+
+  detection3d_pub_->publish(detection3d_array_msg);
+  detection_cloud_pub_->publish(detection_cloud_msg);
+  marker_pub_->publish(marker_array_msg);
+}
+
+void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                        const ultralytics_ros::msg::YoloResult& yolo_result_msg,
+                                        const std_msgs::msg::Header& header,
+                                        vision_msgs::msg::Detection3DArray& detection3d_array_msg,
+                                        sensor_msgs::msg::PointCloud2& combine_detection_cloud_msg)
+{
+  pcl::PointCloud<pcl::PointXYZ> combine_detection_cloud;
+  detection3d_array_msg.header = header;
+  detection3d_array_msg.header.stamp = yolo_result_msg.header.stamp;
+
+  for (size_t i = 0; i < yolo_result_msg.detections.detections.size(); i++)
+  {
+    pcl::PointCloud<pcl::PointXYZ> detection_cloud_raw;
+
+    if (yolo_result_msg.masks.empty())
+    {
+      processPointsWithBbox(cloud, yolo_result_msg.detections.detections[i], detection_cloud_raw);
+    }
+    else
+    {
+      processPointsWithMask(cloud, yolo_result_msg.masks[i], detection_cloud_raw);
+    }
+
+    if (!detection_cloud_raw.points.empty())
+    {
+      pcl::PointCloud<pcl::PointXYZ> detection_cloud = cloud2TransformedCloud(detection_cloud_raw, header);
+      pcl::PointCloud<pcl::PointXYZ> closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
+      createBoundingBox(detection3d_array_msg, closest_detection_cloud,
+                        yolo_result_msg.detections.detections[i].results);
+      combine_detection_cloud += closest_detection_cloud;
+    }
+  }
+
+  pcl::toROSMsg(combine_detection_cloud, combine_detection_cloud_msg);
+  combine_detection_cloud_msg.header = header;
+}
+
+void TrackerWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                                 const vision_msgs::msg::Detection2D& detection2d_msg,
+                                                 pcl::PointCloud<pcl::PointXYZ>& detection_cloud_raw)
+{
+  for (const auto& point : cloud.points)
+  {
+    cv::Point3d pt_cv(point.x, point.y, point.z);
+    cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
+    if (point.z > 0 && uv.x > 0 && uv.x >= detection2d_msg.bbox.center.position.x - detection2d_msg.bbox.size_x / 2 &&
+        uv.x <= detection2d_msg.bbox.center.position.x + detection2d_msg.bbox.size_x / 2 &&
+        uv.y >= detection2d_msg.bbox.center.position.y - detection2d_msg.bbox.size_y / 2 &&
+        uv.y <= detection2d_msg.bbox.center.position.y + detection2d_msg.bbox.size_y / 2)
+    {
+      detection_cloud_raw.points.push_back(point);
+    }
+  }
+}
+
+void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                                 const sensor_msgs::msg::Image& mask_image_msg,
+                                                 pcl::PointCloud<pcl::PointXYZ>& detection_cloud_raw)
+{
+  cv_bridge::CvImagePtr cv_ptr;
+
+  try
+  {
+    cv_ptr = cv_bridge::toCvCopy(mask_image_msg, sensor_msgs::image_encodings::MONO8);
+  }
+  catch (cv_bridge::Exception& e)
+  {
+    RCLCPP_ERROR(this->get_logger(), "%s", e.what());
+    return;
+  }
+
+  for (const auto& point : cloud.points)
+  {
+    cv::Point3d pt_cv(point.x, point.y, point.z);
+    cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
+
+    if (point.z > 0 && uv.x >= 0 && uv.x < cv_ptr->image.cols && uv.y >= 0 && uv.y < cv_ptr->image.rows)
+    {
+      if (cv_ptr->image.at<uchar>(cv::Point(uv.x, uv.y)) > 0)
+      {
+        detection_cloud_raw.points.push_back(point);
+      }
+    }
+  }
+}
+
+void TrackerWithCloudNode::createBoundingBox(
+    vision_msgs::msg::Detection3DArray& detection3d_array_msg, const pcl::PointCloud<pcl::PointXYZ>& cloud,
+    const std::vector<vision_msgs::msg::ObjectHypothesisWithPose>& detections_results_msg)
+{
+  vision_msgs::msg::Detection3D detection3d_msg;
+  pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
+  pcl::PointXYZ min_pt, max_pt;
+  Eigen::Vector4f centroid;
+
+  pcl::compute3DCentroid(cloud, centroid);
+  double theta = -atan2(centroid[1], sqrt(pow(centroid[0], 2) + pow(centroid[2], 2)));
+
+  Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+  transform.rotate(Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ()));
+  pcl::transformPointCloud(cloud, transformed_cloud, transform);
+
+  pcl::getMinMax3D(transformed_cloud, min_pt, max_pt);
+  Eigen::Vector4f transformed_bbox_center =
+      Eigen::Vector4f((min_pt.x + max_pt.x) / 2, (min_pt.y + max_pt.y) / 2, (min_pt.z + max_pt.z) / 2, 1);
+  Eigen::Vector4f bbox_center = transform.inverse() * transformed_bbox_center;
+  Eigen::Quaternionf q(transform.inverse().rotation());
+
+  detection3d_msg.bbox.center.position.x = bbox_center[0];
+  detection3d_msg.bbox.center.position.y = bbox_center[1];
+  detection3d_msg.bbox.center.position.z = bbox_center[2];
+  detection3d_msg.bbox.center.orientation.x = q.x();
+  detection3d_msg.bbox.center.orientation.y = q.y();
+  detection3d_msg.bbox.center.orientation.z = q.z();
+  detection3d_msg.bbox.center.orientation.w = q.w();
+  detection3d_msg.bbox.size.x = max_pt.x - min_pt.x;
+  detection3d_msg.bbox.size.y = max_pt.y - min_pt.y;
+  detection3d_msg.bbox.size.z = max_pt.z - min_pt.z;
+  detection3d_msg.results = detections_results_msg;
+  detection3d_array_msg.detections.push_back(detection3d_msg);
+}
+
+pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::msg::PointCloud2& cloud_msg,
+                                                                          const std_msgs::msg::Header& header)
+{
+  pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
+  sensor_msgs::msg::PointCloud2 transformed_cloud_msg;
+
+  try
+  {
+    tf_buffer_->lookupTransform(cam_model_.tfFrame(), header.frame_id, header.stamp);
+    pcl_ros::transformPointCloud(cam_model_.tfFrame(), cloud_msg, transformed_cloud_msg, *tf_buffer_);
+    pcl::fromROSMsg(transformed_cloud_msg, transformed_cloud);
+  }
+  catch (tf2::TransformException& e)
+  {
+    RCLCPP_WARN(this->get_logger(), "%s", e.what());
+  }
+
+  return transformed_cloud;
+}
+
+pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                                                                            const std_msgs::msg::Header& header)
+{
+  sensor_msgs::msg::PointCloud2 cloud_msg;
+  pcl::toROSMsg(cloud, cloud_msg);
+  return msg2TransformedCloud(cloud_msg, header);
+}
+
+pcl::PointCloud<pcl::PointXYZ>
+TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud)
+{
+  this->get_parameter("cluster_tolerance", cluster_tolerance_);
+  this->get_parameter("voxel_leaf_size", voxel_leaf_size_);
+  this->get_parameter("min_cluster_size", min_cluster_size_);
+  this->get_parameter("max_cluster_size", max_cluster_size_);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
+  voxel_grid.setInputCloud(pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cloud));
+  voxel_grid.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
+  voxel_grid.filter(*downsampled_cloud);
+
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+  std::vector<pcl::PointIndices> cluster_indices;
+  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+  ec.setClusterTolerance(cluster_tolerance_);
+  ec.setMinClusterSize(min_cluster_size_);
+  ec.setMaxClusterSize(max_cluster_size_);
+  ec.setSearchMethod(tree);
+  ec.setInputCloud(downsampled_cloud);
+  ec.extract(cluster_indices);
+
+  float min_distance = std::numeric_limits<float>::max();
+  pcl::PointCloud<pcl::PointXYZ> closest_cluster;
+
+  for (const auto& cluster : cluster_indices)
+  {
+    pcl::PointCloud<pcl::PointXYZ> cloud_cluster;
+    for (const auto& indice : cluster.indices)
+    {
+      cloud_cluster.push_back((*downsampled_cloud)[indice]);
+    }
+
+    Eigen::Vector4f centroid;
+    pcl::compute3DCentroid(cloud_cluster, centroid);
+    float distance = centroid.norm();
+
+    if (distance < min_distance)
+    {
+      min_distance = distance;
+      closest_cluster = cloud_cluster;
+    }
+  }
+
+  return closest_cluster;
+}
+
+visualization_msgs::msg::MarkerArray
+TrackerWithCloudNode::createMarkerArray(const vision_msgs::msg::Detection3DArray& detection3d_array_msg,
+                                        const double& duration)
+{
+  visualization_msgs::msg::MarkerArray marker_array_msg;
+  for (size_t i = 0; i < detection3d_array_msg.detections.size(); i++)
+  {
+    if (std::isfinite(detection3d_array_msg.detections[i].bbox.size.x) &&
+        std::isfinite(detection3d_array_msg.detections[i].bbox.size.y) &&
+        std::isfinite(detection3d_array_msg.detections[i].bbox.size.z))
+    {
+      visualization_msgs::msg::Marker marker_msg;
+      marker_msg.header = detection3d_array_msg.header;
+      marker_msg.ns = "detection";
+      marker_msg.id = i;
+      marker_msg.type = visualization_msgs::msg::Marker::CUBE;
+      marker_msg.action = visualization_msgs::msg::Marker::ADD;
+      marker_msg.pose = detection3d_array_msg.detections[i].bbox.center;
+      marker_msg.scale.x = detection3d_array_msg.detections[i].bbox.size.x;
+      marker_msg.scale.y = detection3d_array_msg.detections[i].bbox.size.y;
+      marker_msg.scale.z = detection3d_array_msg.detections[i].bbox.size.z;
+      marker_msg.color.r = 0.0;
+      marker_msg.color.g = 1.0;
+      marker_msg.color.b = 0.0;
+      marker_msg.color.a = 0.5;
+      marker_msg.lifetime = rclcpp::Duration(std::chrono::duration<double>(duration));
+      marker_array_msg.markers.push_back(marker_msg);
+    }
+  }
+  return marker_array_msg;
 }
 
 int main(int argc, char* argv[])
