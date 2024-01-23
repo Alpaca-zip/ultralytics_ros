@@ -20,9 +20,9 @@
 
 TrackerWithCloudNode::TrackerWithCloudNode() : rclcpp::Node("tracker_with_cloud_node")
 {
-  this->declare_parameter<std::string>("camera_info_topic", "/kitti/camera_color_left/camera_info");
-  this->declare_parameter<std::string>("lidar_topic", "/kitti/velo/pointcloud");
-  this->declare_parameter<std::string>("yolo_result_topic", "/yolo_result");
+  this->declare_parameter<std::string>("camera_info_topic", "camera_info");
+  this->declare_parameter<std::string>("lidar_topic", "points_raw");
+  this->declare_parameter<std::string>("yolo_result_topic", "yolo_result");
   this->declare_parameter<std::string>("yolo_3d_result_topic", "yolo_3d_result");
   this->declare_parameter<float>("cluster_tolerance", 0.5);
   this->declare_parameter<float>("voxel_leaf_size", 0.5);
