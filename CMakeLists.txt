@@ -21,8 +21,8 @@ find_package(image_geometry REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(pcl_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
@@ -48,8 +48,8 @@ ament_target_dependencies(tracker_with_cloud_node
   image_geometry
   message_filters
   pcl_ros
+  tf2_eigen
   tf2_ros
-  Eigen
   OpenCV
   PCL
 )
@@ -69,6 +69,7 @@ install(PROGRAMS
 
 install(DIRECTORY
   launch
+  rviz2
   DESTINATION share/${PROJECT_NAME}
 )
 

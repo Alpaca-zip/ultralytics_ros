@@ -27,7 +27,7 @@ TrackerWithCloudNode::TrackerWithCloudNode() : rclcpp::Node("tracker_with_cloud_
   this->declare_parameter<float>("cluster_tolerance", 0.5);
   this->declare_parameter<float>("voxel_leaf_size", 0.5);
   this->declare_parameter<int>("min_cluster_size", 100);
-  this->declare_parameter<int>("max_cluster_size_", 25000);
+  this->declare_parameter<int>("max_cluster_size", 25000);
 
   this->get_parameter("camera_info_topic", camera_info_topic_);
   this->get_parameter("lidar_topic", lidar_topic_);
@@ -58,12 +58,19 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::Cons
   rclcpp::Duration callback_interval = current_call_time - last_call_time_;
   last_call_time_ = current_call_time;
 
-  vision_msgs::msg::Detection3DArray detection3d_array_msg;
-  sensor_msgs::msg::PointCloud2 detection_cloud_msg;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  downsampled_cloud = downsampleCloudMsg(cloud_msg);
 
   cam_model_.fromCameraInfo(camera_info_msg);
-  pcl::PointCloud<pcl::PointXYZ> transformed_cloud = msg2TransformedCloud(*cloud_msg, cloud_msg->header);
-  projectCloud(transformed_cloud, *yolo_result_msg, cloud_msg->header, detection3d_array_msg, detection_cloud_msg);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  transformed_cloud = cloud2TransformedCloud(downsampled_cloud, cloud_msg->header.frame_id, cam_model_.tfFrame(),
+                                             cloud_msg->header.stamp);
+
+  vision_msgs::msg::Detection3DArray detection3d_array_msg;
+  sensor_msgs::msg::PointCloud2 detection_cloud_msg;
+  projectCloud(transformed_cloud, yolo_result_msg, cloud_msg->header, detection3d_array_msg, detection_cloud_msg);
+
   visualization_msgs::msg::MarkerArray marker_array_msg =
       createMarkerArray(detection3d_array_msg, callback_interval.seconds());
 
@@ -72,64 +79,89 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::Cons
   marker_pub_->publish(marker_array_msg);
 }
 
-void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                        const ultralytics_ros::msg::YoloResult& yolo_result_msg,
+void TrackerWithCloudNode::transformPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_in,
+                                               pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_out,
+                                               const Eigen::Affine3f& transform)
+{
+  int cloud_size = cloud_in->size();
+  cloud_out->resize(cloud_size);
+
+  for (int i = 0; i < cloud_size; i++)
+  {
+    const auto& point = cloud_in->points[i];
+    cloud_out->points[i].x =
+        transform(0, 0) * point.x + transform(0, 1) * point.y + transform(0, 2) * point.z + transform(0, 3);
+    cloud_out->points[i].y =
+        transform(1, 0) * point.x + transform(1, 1) * point.y + transform(1, 2) * point.z + transform(1, 3);
+    cloud_out->points[i].z =
+        transform(2, 0) * point.x + transform(2, 1) * point.y + transform(2, 2) * point.z + transform(2, 3);
+  }
+}
+
+void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                                        const ultralytics_ros::msg::YoloResult::ConstSharedPtr& yolo_result_msg,
                                         const std_msgs::msg::Header& header,
                                         vision_msgs::msg::Detection3DArray& detection3d_array_msg,
                                         sensor_msgs::msg::PointCloud2& combine_detection_cloud_msg)
 {
-  pcl::PointCloud<pcl::PointXYZ> combine_detection_cloud;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr combine_detection_cloud(new pcl::PointCloud<pcl::PointXYZ>());
   detection3d_array_msg.header = header;
-  detection3d_array_msg.header.stamp = yolo_result_msg.header.stamp;
+  detection3d_array_msg.header.stamp = yolo_result_msg->header.stamp;
 
-  for (size_t i = 0; i < yolo_result_msg.detections.detections.size(); i++)
+  for (size_t i = 0; i < yolo_result_msg->detections.detections.size(); i++)
   {
-    pcl::PointCloud<pcl::PointXYZ> detection_cloud_raw;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud_raw(new pcl::PointCloud<pcl::PointXYZ>());
 
-    if (yolo_result_msg.masks.empty())
+    if (yolo_result_msg->masks.empty())
     {
-      processPointsWithBbox(cloud, yolo_result_msg.detections.detections[i], detection_cloud_raw);
+      processPointsWithBbox(cloud, yolo_result_msg->detections.detections[i], detection_cloud_raw);
     }
     else
     {
-      processPointsWithMask(cloud, yolo_result_msg.masks[i], detection_cloud_raw);
+      processPointsWithMask(cloud, yolo_result_msg->masks[i], detection_cloud_raw);
     }
 
-    if (!detection_cloud_raw.points.empty())
+    if (!detection_cloud_raw->points.empty())
     {
-      pcl::PointCloud<pcl::PointXYZ> detection_cloud = cloud2TransformedCloud(detection_cloud_raw, header);
-      pcl::PointCloud<pcl::PointXYZ> closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
+      pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+      detection_cloud =
+          cloud2TransformedCloud(detection_cloud_raw, cam_model_.tfFrame(), header.frame_id, header.stamp);
+
+      pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+      closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
+      *combine_detection_cloud += *closest_detection_cloud;
+
       createBoundingBox(detection3d_array_msg, closest_detection_cloud,
-                        yolo_result_msg.detections.detections[i].results);
-      combine_detection_cloud += closest_detection_cloud;
+                        yolo_result_msg->detections.detections[i].results);
     }
   }
 
-  pcl::toROSMsg(combine_detection_cloud, combine_detection_cloud_msg);
+  pcl::toROSMsg(*combine_detection_cloud, combine_detection_cloud_msg);
   combine_detection_cloud_msg.header = header;
 }
 
-void TrackerWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+void TrackerWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                                                  const vision_msgs::msg::Detection2D& detection2d_msg,
-                                                 pcl::PointCloud<pcl::PointXYZ>& detection_cloud_raw)
+                                                 pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw)
 {
-  for (const auto& point : cloud.points)
+  for (const auto& point : cloud->points)
   {
     cv::Point3d pt_cv(point.x, point.y, point.z);
     cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
+
     if (point.z > 0 && uv.x > 0 && uv.x >= detection2d_msg.bbox.center.position.x - detection2d_msg.bbox.size_x / 2 &&
         uv.x <= detection2d_msg.bbox.center.position.x + detection2d_msg.bbox.size_x / 2 &&
         uv.y >= detection2d_msg.bbox.center.position.y - detection2d_msg.bbox.size_y / 2 &&
         uv.y <= detection2d_msg.bbox.center.position.y + detection2d_msg.bbox.size_y / 2)
     {
-      detection_cloud_raw.points.push_back(point);
+      detection_cloud_raw->points.push_back(point);
     }
   }
 }
 
-void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                                                  const sensor_msgs::msg::Image& mask_image_msg,
-                                                 pcl::PointCloud<pcl::PointXYZ>& detection_cloud_raw)
+                                                 pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw)
 {
   cv_bridge::CvImagePtr cv_ptr;
 
@@ -143,7 +175,7 @@ void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::Poin
     return;
   }
 
-  for (const auto& point : cloud.points)
+  for (const auto& point : cloud->points)
   {
     cv::Point3d pt_cv(point.x, point.y, point.z);
     cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
@@ -152,34 +184,33 @@ void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::Poin
     {
       if (cv_ptr->image.at<uchar>(cv::Point(uv.x, uv.y)) > 0)
       {
-        detection_cloud_raw.points.push_back(point);
+        detection_cloud_raw->points.push_back(point);
       }
     }
   }
 }
 
 void TrackerWithCloudNode::createBoundingBox(
-    vision_msgs::msg::Detection3DArray& detection3d_array_msg, const pcl::PointCloud<pcl::PointXYZ>& cloud,
+    vision_msgs::msg::Detection3DArray& detection3d_array_msg, const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
     const std::vector<vision_msgs::msg::ObjectHypothesisWithPose>& detections_results_msg)
 {
-  vision_msgs::msg::Detection3D detection3d_msg;
-  pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
-  pcl::PointXYZ min_pt, max_pt;
   Eigen::Vector4f centroid;
-
-  pcl::compute3DCentroid(cloud, centroid);
+  pcl::compute3DCentroid(*cloud, centroid);
   double theta = -atan2(centroid[1], sqrt(pow(centroid[0], 2) + pow(centroid[2], 2)));
-
   Eigen::Affine3f transform = Eigen::Affine3f::Identity();
   transform.rotate(Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ()));
-  pcl::transformPointCloud(cloud, transformed_cloud, transform);
 
-  pcl::getMinMax3D(transformed_cloud, min_pt, max_pt);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  transformPointCloud(cloud, transformed_cloud, transform);
+
+  pcl::PointXYZ min_pt, max_pt;
+  pcl::getMinMax3D(*transformed_cloud, min_pt, max_pt);
   Eigen::Vector4f transformed_bbox_center =
       Eigen::Vector4f((min_pt.x + max_pt.x) / 2, (min_pt.y + max_pt.y) / 2, (min_pt.z + max_pt.z) / 2, 1);
   Eigen::Vector4f bbox_center = transform.inverse() * transformed_bbox_center;
   Eigen::Quaternionf q(transform.inverse().rotation());
 
+  vision_msgs::msg::Detection3D detection3d_msg;
   detection3d_msg.bbox.center.position.x = bbox_center[0];
   detection3d_msg.bbox.center.position.y = bbox_center[1];
   detection3d_msg.bbox.center.position.z = bbox_center[2];
@@ -194,77 +225,78 @@ void TrackerWithCloudNode::createBoundingBox(
   detection3d_array_msg.detections.push_back(detection3d_msg);
 }
 
-pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::msg::PointCloud2& cloud_msg,
-                                                                          const std_msgs::msg::Header& header)
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+TrackerWithCloudNode::downsampleCloudMsg(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg)
 {
-  pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
-  sensor_msgs::msg::PointCloud2 transformed_cloud_msg;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::fromROSMsg(*cloud_msg, *cloud);
 
+  this->get_parameter("voxel_leaf_size", voxel_leaf_size_);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::VoxelGrid<pcl::PointXYZ>::Ptr voxel_grid(new pcl::VoxelGrid<pcl::PointXYZ>());
+  voxel_grid->setInputCloud(cloud);
+  voxel_grid->setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
+  voxel_grid->filter(*downsampled_cloud);
+
+  return downsampled_cloud;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                                             const std::string& source_frame, const std::string& target_frame,
+                                             const rclcpp::Time& stamp)
+{
   try
   {
-    tf_buffer_->lookupTransform(cam_model_.tfFrame(), header.frame_id, header.stamp);
-    pcl_ros::transformPointCloud(cam_model_.tfFrame(), cloud_msg, transformed_cloud_msg, *tf_buffer_);
-    pcl::fromROSMsg(transformed_cloud_msg, transformed_cloud);
+    geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer_->lookupTransform(target_frame, source_frame, stamp);
+    Eigen::Affine3f eigen_transform = tf2::transformToEigen(tf_stamped.transform).cast<float>();
+    pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    transformPointCloud(cloud, transformed_cloud, eigen_transform);
+
+    return transformed_cloud;
   }
   catch (tf2::TransformException& e)
   {
     RCLCPP_WARN(this->get_logger(), "%s", e.what());
+    return cloud;
   }
-
-  return transformed_cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZ> TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                                                            const std_msgs::msg::Header& header)
-{
-  sensor_msgs::msg::PointCloud2 cloud_msg;
-  pcl::toROSMsg(cloud, cloud_msg);
-  return msg2TransformedCloud(cloud_msg, header);
-}
-
-pcl::PointCloud<pcl::PointXYZ>
-TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud)
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
   this->get_parameter("cluster_tolerance", cluster_tolerance_);
-  this->get_parameter("voxel_leaf_size", voxel_leaf_size_);
   this->get_parameter("min_cluster_size", min_cluster_size_);
   this->get_parameter("max_cluster_size", max_cluster_size_);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-
-  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
-  voxel_grid.setInputCloud(pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cloud));
-  voxel_grid.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
-  voxel_grid.filter(*downsampled_cloud);
-
-  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
   std::vector<pcl::PointIndices> cluster_indices;
   pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
   ec.setClusterTolerance(cluster_tolerance_);
   ec.setMinClusterSize(min_cluster_size_);
   ec.setMaxClusterSize(max_cluster_size_);
   ec.setSearchMethod(tree);
-  ec.setInputCloud(downsampled_cloud);
+  ec.setInputCloud(cloud);
   ec.extract(cluster_indices);
 
   float min_distance = std::numeric_limits<float>::max();
-  pcl::PointCloud<pcl::PointXYZ> closest_cluster;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr closest_cluster(new pcl::PointCloud<pcl::PointXYZ>());
 
   for (const auto& cluster : cluster_indices)
   {
-    pcl::PointCloud<pcl::PointXYZ> cloud_cluster;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>());
     for (const auto& indice : cluster.indices)
     {
-      cloud_cluster.push_back((*downsampled_cloud)[indice]);
+      cloud_cluster->push_back((*cloud)[indice]);
     }
 
     Eigen::Vector4f centroid;
-    pcl::compute3DCentroid(cloud_cluster, centroid);
+    pcl::compute3DCentroid(*cloud_cluster, centroid);
     float distance = centroid.norm();
 
     if (distance < min_distance)
     {
       min_distance = distance;
-      closest_cluster = cloud_cluster;
+      *closest_cluster = *cloud_cluster;
     }
   }
 
@@ -276,6 +308,7 @@ TrackerWithCloudNode::createMarkerArray(const vision_msgs::msg::Detection3DArray
                                         const double& duration)
 {
   visualization_msgs::msg::MarkerArray marker_array_msg;
+
   for (size_t i = 0; i < detection3d_array_msg.detections.size(); i++)
   {
     if (std::isfinite(detection3d_array_msg.detections[i].bbox.size.x) &&
@@ -300,6 +333,7 @@ TrackerWithCloudNode::createMarkerArray(const vision_msgs::msg::Detection3DArray
       marker_array_msg.markers.push_back(marker_msg);
     }
   }
+
   return marker_array_msg;
 }
 

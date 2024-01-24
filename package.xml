@@ -20,9 +20,11 @@
   <depend>message_filters</depend>
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>
+  <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
   <exec_depend>image_view</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>rviz2</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
   <export>
     <build_type>ament_cmake</build_type>

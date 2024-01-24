@@ -37,13 +37,14 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl_ros/transforms.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <pcl/common/common.h>
+#include <pcl/common/centroid.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -82,23 +83,27 @@ public:
   void syncCallback(const sensor_msgs::msg::CameraInfo::ConstSharedPtr& camera_info_msg,
                     const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg,
                     const ultralytics_ros::msg::YoloResult::ConstSharedPtr& yolo_result_msg);
-  void projectCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                    const ultralytics_ros::msg::YoloResult& yolo_result_msg, const std_msgs::msg::Header& header,
-                    vision_msgs::msg::Detection3DArray& detection3d_array_msg,
+  void transformPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_in,
+                           pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_out, const Eigen::Affine3f& transform);
+  void projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                    const ultralytics_ros::msg::YoloResult::ConstSharedPtr& yolo_result_msg,
+                    const std_msgs::msg::Header& header, vision_msgs::msg::Detection3DArray& detection3d_array_msg,
                     sensor_msgs::msg::PointCloud2& combine_detection_cloud_msg);
-  void processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>& cloud,
+  void processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                              const vision_msgs::msg::Detection2D& detection2d_msg,
-                             pcl::PointCloud<pcl::PointXYZ>& detection_cloud_raw);
-  void processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>& cloud, const sensor_msgs::msg::Image& mask_image_msg,
-                             pcl::PointCloud<pcl::PointXYZ>& detection_cloud_raw);
+                             pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw);
+  void processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                             const sensor_msgs::msg::Image& mask_image_msg,
+                             pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw);
   void createBoundingBox(vision_msgs::msg::Detection3DArray& detection3d_array_msg,
-                         const pcl::PointCloud<pcl::PointXYZ>& cloud,
+                         const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                          const std::vector<vision_msgs::msg::ObjectHypothesisWithPose>& detections_results_msg);
-  pcl::PointCloud<pcl::PointXYZ> msg2TransformedCloud(const sensor_msgs::msg::PointCloud2& cloud_msg,
-                                                      const std_msgs::msg::Header& header);
-  pcl::PointCloud<pcl::PointXYZ> cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>& cloud,
-                                                        const std_msgs::msg::Header& header);
-  pcl::PointCloud<pcl::PointXYZ> euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>& cloud);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampleCloudMsg(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
+                                                             const std::string& source_frame,
+                                                             const std::string& target_frame,
+                                                             const rclcpp::Time& stamp);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
   visualization_msgs::msg::MarkerArray
   createMarkerArray(const vision_msgs::msg::Detection3DArray& detection3d_array_msg, const double& duration);
 };
