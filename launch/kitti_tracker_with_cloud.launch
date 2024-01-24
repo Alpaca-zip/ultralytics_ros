@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="debug" default="true"/>
+  <arg name="yolo_model" default="yolov8m-seg.pt"/>
+  <arg name="input_topic" default="/kitti/camera_color_left/image_raw"/>
+  <arg name="result_topic" default="/yolo_result"/>
+  <arg name="result_image_topic" default="/yolo_image"/>
+  <arg name="conf_thres" default="0.25"/>
+  <arg name="iou_thres" default="0.45"/>
+  <arg name="max_det" default="300"/>
+  <arg name="tracker" default="bytetrack.yaml"/>
+  <arg name="device" default="cuda:0"/>
+  <arg name="result_conf" default="true"/>
+  <arg name="result_line_width" default="1"/>
+  <arg name="result_font_size" default="1"/>
+  <arg name="result_font" default="Arial.ttf"/>
+  <arg name="result_labels" default="true"/>
+  <arg name="result_boxes" default="true"/>
+
+  <arg name="camera_info_topic" default="/kitti/camera_color_left/camera_info"/>
+  <arg name="lidar_topic" default="/kitti/velo/pointcloud"/>
+  <arg name="yolo_3d_result_topic" default="/yolo_3d_result"/>
+  <arg name="cluster_tolerance" default="0.3"/>
+  <arg name="voxel_leaf_size" default="0.1"/>
+  <arg name="min_cluster_size" default="100"/>
+  <arg name="max_cluster_size" default="10000"/>
+
+  <set_parameter name="use_sim_time" value="$(var use_sim_time)"/>
+
+  <node pkg="ultralytics_ros" exec="tracker_node.py" output="screen">
+    <param name="yolo_model" value="$(var yolo_model)"/>
+    <param name="input_topic" value="$(var input_topic)"/>
+    <param name="result_topic" value="$(var result_topic)"/>
+    <param name="result_image_topic" value="$(var result_image_topic)"/>
+    <param name="conf_thres" value="$(var conf_thres)"/>
+    <param name="iou_thres" value="$(var iou_thres)"/>
+    <param name="max_det" value="$(var max_det)"/>
+    <param name="tracker" value="$(var tracker)"/>
+    <param name="result_conf" value="$(var result_conf)"/>
+    <param name="result_line_width" value="$(var result_line_width)"/>
+    <param name="result_font_size" value="$(var result_font_size)"/>
+    <param name="result_font" value="$(var result_font)"/>
+    <param name="result_labels" value="$(var result_labels)"/>
+    <param name="result_boxes" value="$(var result_boxes)"/>
+    <!--<param name="classes" value="0, 1, 2" value-sep=", "/>-->
+    <param name="device" value="$(var device)"/>
+  </node>
+
+  <node pkg="ultralytics_ros" exec="tracker_with_cloud_node" output="screen">
+    <param name="camera_info_topic" value="$(var camera_info_topic)"/>
+    <param name="lidar_topic" value="$(var lidar_topic)"/>
+    <param name="yolo_result_topic" value="$(var result_topic)"/>
+    <param name="yolo_3d_result_topic" value="$(var yolo_3d_result_topic)"/>
+    <param name="cluster_tolerance" value="$(var cluster_tolerance)"/>
+    <param name="voxel_leaf_size" value="$(var voxel_leaf_size)"/>
+    <param name="min_cluster_size" value="$(var min_cluster_size)"/>
+    <param name="max_cluster_size" value="$(var max_cluster_size)"/>
+  </node>
+
+  <node if="$(var debug)" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share ultralytics_ros)/rviz2/kitti.rviz"/>
+</launch>
