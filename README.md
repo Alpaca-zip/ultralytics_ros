@@ -1,29 +1,73 @@
-# ultralytics_ros [![ROS2-humble Industrial CI](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-ci.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-ci.yml) [![ROS2-humble Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml)
-ROS 2 package for real-time object detection using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
+# ultralytics_ros
+### Introduction
+ROS/ROS 2 package for real-time object detection and segmentation using the Ultralytics YOLO, enabling flexible integration with various robotics applications.
 
 |  `tracker_node`  |  `tracker_with_cloud_node`  |
 | :------------: | :-----------------------: |
-| <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/9da7dbbf-5cc0-41bc-be82-d481abbf552a" width="450px"> | **TODO** |
+| <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/7ccefee5-1bf9-48de-97e0-a61000bba822" width="450px"> | <img src="https://github.com/Alpaca-zip/ultralytics_ros/assets/84959376/674f352f-5171-4fcf-beb5-394aa3dfe320" height="160px"> |
 
-- The `tracker_node` provides real-time object detection on incoming ROS 2 image messages using the Ultralytics YOLO model.
+- The `tracker_node` provides real-time object detection on incoming ROS/ROS 2 image messages using the Ultralytics YOLO model.
+- The `tracker_with_cloud_node` provides functionality for 3D object detection by integrating 2D detections, mask image, LiDAR data, and camera information.
+
+### Status
+| ROS distro | Industrial CI | Docker |
+| :--------: | :-----------: | :----: |
+|  ROS Melodic | [![ROS-melodic Industrial CI](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/melodic-ci.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/melodic-ci.yml) | [![ROS-melodic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/melodic-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/melodic-docker-build-check.yml)
+|  ROS Noetic | [![ROS-noetic Industrial CI](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/noetic-ci.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/noetic-ci.yml) | [![ROS-noetic Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/noetic-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/noetic-docker-build-check.yml)
+|  ROS 2 Humble | [![ROS2-humble Industrial CI](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-ci.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-ci.yml) | [![ROS2-humble Docker Build Check](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml/badge.svg)](https://github.com/Alpaca-zip/ultralytics_ros/actions/workflows/humble-docker-build-check.yml)
 
 ## Setup ⚙
-```
-$ cd ~/colcon_ws/src
-$ GIT_LFS_SKIP_SMUDGE=1 git clone -b humble-devel https://github.com/Alpaca-zip/ultralytics_ros.git
-$ python3 -m pip install -r ultralytics_ros/requirements.txt
-$ cd ~/colcon_ws
+### ROS Melodic
+```bash
+$ cd ~/{ROS_WORKSPACE}/src
+$ GIT_LFS_SKIP_SMUDGE=1 git clone -b melodic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
 $ rosdep install -r -y -i --from-paths .
-$ colcon build
+$ pip install pipenv
+$ cd ultralytics_ros
+$ pipenv install
+$ pipenv shell
+$ cd ~/{ROS_WORKSPACE} && catkin build
+```
+### ROS Noetic
+```bash
+$ cd ~/{ROS_WORKSPACE}/src
+$ GIT_LFS_SKIP_SMUDGE=1 git clone -b noetic-devel https://github.com/Alpaca-zip/ultralytics_ros.git
+$ rosdep install -r -y -i --from-paths .
+$ python3 -m pip install -r ultralytics_ros/requirements.txt
+$ cd ~/{ROS_WORKSPACE} && catkin build
+```
+### ROS 2 Humble
+```bash
+$ cd ~/{ROS2_WORKSPACE}/src
+$ GIT_LFS_SKIP_SMUDGE=1 git clone -b humble-devel https://github.com/Alpaca-zip/ultralytics_ros.git
+$ rosdep install -r -y -i --from-paths .
+$ python3 -m pip install -r ultralytics_ros/requirements.txt
+$ cd ~/{ROS2_WORKSPACE} && $ colcon build
 ```
 **NOTE**: If you want to download KITTI datasets, remove `GIT_LFS_SKIP_SMUDGE=1` from the command line.
+
 ## Run 🚀
+### ROS Melodic & ROS Noetic
 **`tracker_node`**
+```bash
+$ roslaunch ultralytics_ros tracker.launch debug:=true
 ```
+**`tracker_node` & `tracker_with_cloud_node`**
+```bash
+$ roslaunch ultralytics_ros tracker_with_cloud.launch debug:=true
+```
+### ROS 2 Humble
+**`tracker_node`**
+```bash
 $ ros2 launch ultralytics_ros tracker.launch.xml debug:=true
 ```
+**`tracker_node` & `tracker_with_cloud_node`**
+```bash
+$ ros2 launch ultralytics_ros tracker_with_cloud.launch.xml debug:=true
+```
+**NOTE**: If the 3D bounding box is not displayed correctly, please consider using a lighter yolo model(`yolov8n.pt`) or increasing the `voxel_leaf_size`.
+
 ## `tracker_node`
-### Params
 ### Params
 - `yolo_model`: Pre-trained Weights.  
 For yolov8, you can choose `yolov8*.pt`, `yolov8*-seg.pt`.
@@ -69,18 +113,65 @@ For yolov8, you can choose `yolov8*.pt`, `yolov8*-seg.pt`.
     vision_msgs/Detection2DArray detections
     sensor_msgs/Image[] masks
     ```
+
 ## `tracker_with_cloud_node`
-**TODO**
+### Params
+- `camera_info_topic`: Topic name for camera info.
+- `lidar_topic`: Topic name for lidar.
+- `yolo_result_topic`: Topic name of the custom message containing the 2D bounding box and the mask image.
+- `yolo_3d_result_topic`: Topic name for 3D bounding box.
+- `cluster_tolerance`: Spatial cluster tolerance as a measure in the L2 Euclidean space.
+- `voxel_leaf_size`: Voxel size for pointcloud downsampling.
+- `min_cluster_size`: Minimum number of points that a cluster needs to contain.
+- `max_cluster_size`: Maximum number of points that a cluster needs to contain.
+### Topics
+- Subscribed Topics:
+  - Camera info from `camera_info_topic` parameter. ([sensor_msgs/CameraInfo](https://docs.ros.org/en/api/sensor_msgs/html/msg/CameraInfo.html))
+  - Lidar data from `lidar_topic` parameter. ([sensor_msgs/PointCloud2](https://docs.ros.org/en/api/sensor_msgs/html/msg/PointCloud2.html))
+  - Detected objects(2D bounding box, mask image) from `yolo_result_topic` parameter. (ultralytics_ros/YoloResult)
+    ```
+    std_msgs/Header header
+    vision_msgs/Detection2DArray detections
+    sensor_msgs/Image[] masks
+    ```
+- Published Topics:
+  - Detected cloud points to `/detection_cloud` topic. ([sensor_msgs/PointCloud2](https://docs.ros.org/en/api/sensor_msgs/html/msg/PointCloud2.html))
+  - Detected objects(3D bounding box) to `yolo_3d_result_topic` parameter. ([vision_msgs/Detection3DArray](http://docs.ros.org/en/lunar/api/vision_msgs/html/msg/Detection3DArray.html))
+  - Visualization markers to `/detection_marker` topic. ([visualization_msgs/MarkerArray](https://docs.ros.org/en/api/visualization_msgs/html/msg/MarkerArray.html))
+
 ## Docker with KITTI datasets 🐳
 [![dockeri.co](https://dockerico.blankenship.io/image/alpacazip/ultralytics_ros)](https://hub.docker.com/r/alpacazip/ultralytics_ros)
 
 ### Docker Pull & Run
+**ROS Melodic**
+```bash
+$ docker pull alpacazip/ultralytics_ros:melodic
+$ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:melodic
 ```
+**ROS Noetic**
+```bash
+$ docker pull alpacazip/ultralytics_ros:noetic
+$ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:noetic
+```
+**ROS 2 Humble**
+```bash
 $ docker pull alpacazip/ultralytics_ros:humble
 $ docker run -p 6080:80 --shm-size=512m alpacazip/ultralytics_ros:humble
 ```
-### Run tracker_node
+### Run tracker_node & tracker_with_cloud_node
+**ROS Melodic**
+```bash
+$ roscd ultralytics_ros && pipenv shell
+$ roslaunch ultralytics_ros kitti_predict_with_cloud.launch
+$ cd ~/catkin_ws/src/ultralytics_ros/rosbag && rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
 ```
-$ ros2 launch ultralytics_ros kitti_tracker.launch.xml
+**ROS Noetic**
+```bash
+$ roslaunch ultralytics_ros kitti_tracker_with_cloud.launch
+$ cd ~/catkin_ws/src/ultralytics_ros/rosbag && rosbag play kitti_2011_09_26_drive_0106_synced.bag --clock --loop
+```
+**ROS 2 Humble**
+```bash
+$ ros2 launch ultralytics_ros kitti_tracker_with_cloud.launch.xml
 $ cd ~/colcon_ws/src/ultralytics_ros/ros2bag && ros2 bag play kitti_2011_09_26_drive_0106_synced --clock --loop
 ```
