@@ -5,13 +5,28 @@
   <description>The ultralytics_ros package</description>
   <maintainer email="alpaca.zip@gmail.com">Alpaca-zip</maintainer>
   <license>AGPL-3.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <depend>rclcpp</depend>
   <depend>rclpy</depend>
-  <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>vision_msgs</depend>
-  <depend>image_view</depend>
-  <exec_depend>ament_index_python</exec_depend>
+  <depend>visualization_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_geometry</depend>
+  <depend>message_filters</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_ros</depend>
+  <exec_depend>image_view</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
