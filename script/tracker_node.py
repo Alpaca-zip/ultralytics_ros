@@ -79,7 +79,7 @@ class TrackerNode(Node):
             self.get_parameter("classes").get_parameter_value().integer_array_value
         )
         tracker = self.get_parameter("tracker").get_parameter_value().string_value
-        device = self.get_parameter("device").get_parameter_value().string_value
+        device = self.get_parameter("device").get_parameter_value().string_value or None
         results = self.model.track(
             source=cv_image,
             conf=conf_thres,

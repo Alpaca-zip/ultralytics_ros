@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="use_sim_time" default="true"/>
   <arg name="debug" default="true"/>
   <arg name="yolo_model" default="yolov8m-seg.pt"/>
   <arg name="input_topic" default="/kitti/camera_color_left/image_raw"/>
@@ -9,13 +10,15 @@
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
   <arg name="tracker" default="bytetrack.yaml"/>
-  <arg name="device" default="cuda:0"/>
+  <arg name="device" default=""/>
   <arg name="result_conf" default="true"/>
   <arg name="result_line_width" default="1"/>
   <arg name="result_font_size" default="1"/>
   <arg name="result_font" default="Arial.ttf"/>
   <arg name="result_labels" default="true"/>
   <arg name="result_boxes" default="true"/>
+
+  <set_parameter name="use_sim_time" value="$(var use_sim_time)"/>
 
   <node pkg="ultralytics_ros" exec="tracker_node.py" output="screen">
     <param name="yolo_model" value="$(var yolo_model)"/>
