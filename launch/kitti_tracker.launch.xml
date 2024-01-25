@@ -10,7 +10,7 @@
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
   <arg name="tracker" default="bytetrack.yaml"/>
-  <arg name="device" default="cuda:0"/>
+  <arg name="device" default=""/>
   <arg name="result_conf" default="true"/>
   <arg name="result_line_width" default="1"/>
   <arg name="result_font_size" default="1"/>
