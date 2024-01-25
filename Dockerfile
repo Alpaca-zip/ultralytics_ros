@@ -10,7 +10,8 @@ RUN apt-get update && apt-get upgrade -y && \
         python3-pip \
         ros-humble-cv-bridge \
         ros-humble-vision-msgs \
-        ros-humble-image-view && \
+        ros-humble-image-view \
+        ros-humble-pcl-* && \
     apt-get clean && \
     rm -r /var/lib/apt/lists/*
 
@@ -32,4 +33,4 @@ RUN cd ~/colcon_ws/src && \
     python3 -m pip install -r requirements.txt
 
 # Build the ROS2 package
-RUN cd ~/colcon_ws && colcon build
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash; cd ~/colcon_ws/; colcon build"
