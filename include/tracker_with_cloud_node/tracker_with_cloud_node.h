@@ -94,6 +94,7 @@ public:
   void processPointsWithMask(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const sensor_msgs::Image& mask,
                              pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw);
   pcl::PointCloud<pcl::PointXYZ>::Ptr msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampleCloudMsg(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                                                              const std_msgs::Header& header);
   pcl::PointCloud<pcl::PointXYZ>::Ptr euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);

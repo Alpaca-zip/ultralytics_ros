@@ -50,14 +50,16 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
   ros::Time current_call_time = ros::Time::now();
   ros::Duration callback_interval = current_call_time - last_call_time_;
   last_call_time_ = current_call_time;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  downsampled_cloud = downsampleCloudMsg(cloud_msg);
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud;
+  transformed_cloud = cloud2TransformedCloud(downsampled_cloud, cloud_msg->header);
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 detection_cloud_msg;
   visualization_msgs::MarkerArray marker_array_msg;
 
   cam_model_.fromCameraInfo(camera_info_msg);
-  transformed_cloud = msg2TransformedCloud(cloud_msg);
   projectCloud(transformed_cloud, yolo_result_msg, cloud_msg->header, detections3d_msg, detection_cloud_msg);
   marker_array_msg = createMarkerArray(detections3d_msg, callback_interval.toSec());
 
@@ -172,6 +174,19 @@ TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPt
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr
+TrackerWithCloudNode::downsampleCloudMsg(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
+{
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::fromROSMsg(*cloud_msg, *cloud);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
+  voxel_grid.setInputCloud(cloud);
+  voxel_grid.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
+  voxel_grid.filter(*downsampled_cloud);
+  return downsampled_cloud;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr
 TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                                              const std_msgs::Header& header)
 {
@@ -194,12 +209,6 @@ TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
-  voxel_grid.setInputCloud(cloud);
-  voxel_grid.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
-  voxel_grid.filter(*downsampled_cloud);
-
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   std::vector<pcl::PointIndices> cluster_indices;
   pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
@@ -208,7 +217,7 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   ec.setMinClusterSize(min_cluster_size_);
   ec.setMaxClusterSize(max_cluster_size_);
   ec.setSearchMethod(tree);
-  ec.setInputCloud(downsampled_cloud);
+  ec.setInputCloud(cloud);
   ec.extract(cluster_indices);
 
   float min_distance = std::numeric_limits<float>::max();
@@ -219,7 +228,7 @@ TrackerWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>);
     for (const auto& indice : cluster.indices)
     {
-      cloud_cluster->push_back((*downsampled_cloud)[indice]);
+      cloud_cluster->push_back((*cloud)[indice]);
     }
 
     Eigen::Vector4f centroid;
