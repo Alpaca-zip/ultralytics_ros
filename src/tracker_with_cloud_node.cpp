@@ -153,27 +153,6 @@ void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::Poin
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr
-TrackerWithCloudNode::msg2TransformedCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
-{
-  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  sensor_msgs::PointCloud2 transformed_cloud_msg;
-
-  try
-  {
-    geometry_msgs::TransformStamped tf =
-        tf_buffer_->lookupTransform(cam_model_.tfFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp);
-    pcl_ros::transformPointCloud(cam_model_.tfFrame(), *cloud_msg, transformed_cloud_msg, *tf_buffer_);
-    pcl::fromROSMsg(transformed_cloud_msg, *transformed_cloud);
-  }
-  catch (tf2::TransformException& e)
-  {
-    ROS_WARN("%s", e.what());
-  }
-
-  return transformed_cloud;
-}
-
-pcl::PointCloud<pcl::PointXYZ>::Ptr
 TrackerWithCloudNode::downsampleCloudMsg(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
