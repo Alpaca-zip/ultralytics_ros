@@ -54,7 +54,8 @@ void TrackerWithCloudNode::syncCallback(const sensor_msgs::CameraInfo::ConstPtr&
   downsampled_cloud = downsampleCloudMsg(cloud_msg);
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud;
-  transformed_cloud = cloud2TransformedCloud(downsampled_cloud, cam_model_.tfFrame(), cloud_msg->header);
+  transformed_cloud = cloud2TransformedCloud(downsampled_cloud, cloud_msg->header.frame_id, cam_model_.tfFrame(),
+                                             cloud_msg->header.stamp);
   vision_msgs::Detection3DArray detections3d_msg;
   sensor_msgs::PointCloud2 detection_cloud_msg;
   visualization_msgs::MarkerArray marker_array_msg;
@@ -93,7 +94,7 @@ void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
     if (!detection_cloud_raw->points.empty())
     {
       pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud =
-          cloud2TransformedCloud(detection_cloud_raw, cam_model_.tfFrame(), header);
+          cloud2TransformedCloud(detection_cloud_raw, cam_model_.tfFrame(), header.frame_id, header.stamp);
       pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
       createBoundingBox(detections3d_msg, closest_detection_cloud, yolo_result_msg->detections.detections[i].results);
       combine_detection_cloud += *closest_detection_cloud;
@@ -168,13 +169,14 @@ TrackerWithCloudNode::downsampleCloudMsg(const sensor_msgs::PointCloud2ConstPtr&
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
-                                             const std::string& target_frame, const std_msgs::Header& header)
+                                             const std::string& source_frame, const std::string& target_frame,
+                                             const ros::Time& stamp)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
   try
   {
-    geometry_msgs::TransformStamped tf = tf_buffer_->lookupTransform(header.frame_id, target_frame, header.stamp);
+    geometry_msgs::TransformStamped tf = tf_buffer_->lookupTransform(source_frame, target_frame, stamp);
     pcl_ros::transformPointCloud(*cloud, *transformed_cloud, tf.transform);
   }
   catch (tf2::TransformException& e)

@@ -95,8 +95,8 @@ public:
                              pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw);
   pcl::PointCloud<pcl::PointXYZ>::Ptr downsampleCloudMsg(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
-                                                             const std::string& target_frame,
-                                                             const std_msgs::Header& header);
+                                                             const std::string& source_frame,
+                                                             const std::string& target_frame, const ros::Time& stamp);
   pcl::PointCloud<pcl::PointXYZ>::Ptr euclideanClusterExtraction(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
   void createBoundingBox(vision_msgs::Detection3DArray& detections3d_msg,
                          const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
