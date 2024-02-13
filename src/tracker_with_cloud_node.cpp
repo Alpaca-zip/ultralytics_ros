@@ -176,7 +176,7 @@ TrackerWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ
 
   try
   {
-    geometry_msgs::TransformStamped tf = tf_buffer_->lookupTransform(source_frame, target_frame, stamp);
+    geometry_msgs::TransformStamped tf = tf_buffer_->lookupTransform(target_frame, source_frame, stamp);
     pcl_ros::transformPointCloud(*cloud, *transformed_cloud, tf.transform);
   }
   catch (tf2::TransformException& e)
