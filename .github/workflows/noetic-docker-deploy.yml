@@ -1,9 +1,9 @@
 name: ROS-noetic Docker Image Deployment
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+    branches:
+      - noetic-devel
   workflow_dispatch:
 
 jobs:
