@@ -20,6 +20,13 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: free up disk space
+        run: |
+          sudo apt-get -qq purge build-essential "ghc*"
+          sudo apt-get clean
+          docker system prune -af
+          sudo rm -rf /usr/local
+          df -h
       - name: run industrial_ci
         uses: 'ros-industrial/industrial_ci@master'
         env:
@@ -43,6 +50,13 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: free up disk space
+        run: |
+          sudo apt-get -qq purge build-essential "ghc*"
+          sudo apt-get clean
+          docker system prune -af
+          sudo rm -rf /usr/local
+          df -h
       - name: run industrial_ci
         uses: 'ros-industrial/industrial_ci@master'
         env:
@@ -56,6 +70,13 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: free up disk space
+        run: |
+          sudo apt-get -qq purge build-essential "ghc*"
+          sudo apt-get clean
+          docker system prune -af
+          sudo rm -rf /usr/local
+          df -h
       - name: run industrial_ci
         uses: 'ros-industrial/industrial_ci@master'
         env:
@@ -82,6 +103,13 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: free up disk space
+        run: |
+          sudo apt-get -qq purge build-essential "ghc*"
+          sudo apt-get clean
+          docker system prune -af
+          sudo rm -rf /usr/local
+          df -h
       - name: run industrial_ci
         uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
