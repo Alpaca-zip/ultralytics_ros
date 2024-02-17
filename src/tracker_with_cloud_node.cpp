@@ -78,6 +78,7 @@ void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
   detections3d_msg.header = header;
   detections3d_msg.header.stamp = yolo_result_msg->header.stamp;
 
+  #pragma omp parallel for
   for (size_t i = 0; i < yolo_result_msg->detections.detections.size(); i++)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud_raw(new pcl::PointCloud<pcl::PointXYZ>);
@@ -96,8 +97,12 @@ void TrackerWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
       pcl::PointCloud<pcl::PointXYZ>::Ptr detection_cloud =
           cloud2TransformedCloud(detection_cloud_raw, cam_model_.tfFrame(), header.frame_id, header.stamp);
       pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
-      createBoundingBox(detections3d_msg, closest_detection_cloud, yolo_result_msg->detections.detections[i].results);
-      combine_detection_cloud += *closest_detection_cloud;
+
+      #pragma omp critical
+      {
+        createBoundingBox(detections3d_msg, closest_detection_cloud, yolo_result_msg->detections.detections[i].results);
+        combine_detection_cloud += *closest_detection_cloud;
+      }
     }
   }
 
@@ -109,6 +114,7 @@ void TrackerWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::Poin
                                                  const vision_msgs::Detection2D& detection,
                                                  pcl::PointCloud<pcl::PointXYZ>::Ptr& detection_cloud_raw)
 {
+  #pragma omp parallel for
   for (const auto& point : cloud->points)
   {
     cv::Point3d pt_cv(point.x, point.y, point.z);
@@ -118,6 +124,7 @@ void TrackerWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::Poin
         uv.y >= detection.bbox.center.y - detection.bbox.size_y / 2 &&
         uv.y <= detection.bbox.center.y + detection.bbox.size_y / 2)
     {
+      #pragma omp critical
       detection_cloud_raw->points.push_back(point);
     }
   }
@@ -139,6 +146,7 @@ void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::Poin
     return;
   }
 
+  #pragma omp parallel for
   for (const auto& point : cloud->points)
   {
     cv::Point3d pt_cv(point.x, point.y, point.z);
@@ -148,6 +156,7 @@ void TrackerWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::Poin
     {
       if (cv_ptr->image.at<uchar>(cv::Point(uv.x, uv.y)) > 0)
       {
+        #pragma omp critical
         detection_cloud_raw->points.push_back(point);
       }
     }

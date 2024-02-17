@@ -27,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
+find_package(OpenMP REQUIRED)
 
 add_message_files(
   FILES
@@ -68,11 +69,13 @@ include_directories(
 )
 
 add_executable(tracker_with_cloud_node src/tracker_with_cloud_node.cpp)
+target_compile_options(tracker_with_cloud_node PRIVATE ${OpenMP_CXX_FLAGS})
 target_link_libraries(tracker_with_cloud_node
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
+  ${OpenMP_CXX_LIBRARIES}
 )
 add_dependencies(tracker_with_cloud_node ultralytics_ros_generate_messages_cpp)
 
